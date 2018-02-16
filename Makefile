@@ -74,7 +74,7 @@ DLIBDIR =
 DLIBS = 
 
 # Define project name and Ram/Flash mode here
-PROJECT        = main
+PROJECT        = stmcool
 
 # List all user C define here, like -D_DEBUG=1
 UDEFS =
@@ -171,7 +171,7 @@ CPFLAGS += -MD -MP -MF .dep/$(@F).d
 # makefile rules
 #
 
-all: $(OBJS) $(PROJECT).elf main.bin
+all: $(OBJS) $(PROJECT).elf $(PROJECT).bin
 	$(TRGT)size $(PROJECT).elf
 
 %.o : %.c

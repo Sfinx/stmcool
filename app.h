@@ -39,3 +39,6 @@ typedef struct status_t {
 } status_t;
 
 extern status_t status;
+
+extern void _1_sec_tick();
+extern void _100_ms_tick();

@@ -203,7 +203,7 @@ void set_leds(int v)
  set_led(BLUE_LED, v);
 }
 
-void Delay(vu32 nCount)
+void hard_elay(vu32 nCount)
 {
  for(; nCount != 0; nCount--);
 }
@@ -213,44 +213,13 @@ void panic(int i)
  while(1) {
   SEGGER_RTT_printf(0, "%sOops [%d] !\r\n%s", RTT_CTRL_BG_BRIGHT_RED, i, RTT_CTRL_RESET);
   set_leds(1);
-  Delay(0x9FFFFF);
+  hard_elay(0x9FFFFF);
   set_leds(0);
-  Delay(0x9FFFFF);
+  hard_elay(0x9FFFFF);
  }
 }
 
-void _100_ms_tick()
-{
-}
-
-u32 get_fan(u8 fan)
-{
- u32 f = (status.fan[fan]*60)/2;
- status.fan[fan] = 0;
- return f;
-}
-
-u32 get_temp(u8 temp)
-{
- u32 t = status.temp[temp];
- // status.temp[temp] = 0;
- return t;
-}
-
-#ifdef USE_RTT
-static int counter;
-#endif
-
-void _1_sec_tick()
-{
- uint i = 0;
- for (; i < MAX_FANS; i++)
-   SEGGER_RTT_printf(0, "%d: fan%d:%d\r\n", counter++, i, get_fan(i));
- SEGGER_RTT_printf(0, "temp0: %d\r\n", get_temp(0));
- 
-}
-
-void delay_mks(u32 mks)
+void hard_delay_mks(u32 mks)
 {
  volatile u32 nCount;
  RCC_ClocksTypeDef RCC_Clocks;

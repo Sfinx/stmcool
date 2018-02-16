@@ -14,13 +14,11 @@ typedef unsigned int uint;
 extern void board_init();
 extern void panic(int);
 extern void beep(u32 t);
-extern void delay_mks(u32 mks);
-extern void _1_sec_tick();
-extern void _100_ms_tick();
+extern void hard_delay_mks(u32 mks);
 
-#define delay_ms(x)     delay_mks(x * 1000)
+#define hard_delay_ms(x)	hard_delay_mks(x * 1000)
 
-#define BUZZER_FREQ	0
+#define BUZZER_FREQ		0
 
 typedef enum oops_t {
     NMI_OOPS, 		// 0
