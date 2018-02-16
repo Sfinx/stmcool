@@ -8,13 +8,11 @@ void systick_init()
  status._1ms_tick = 1000; // do the first tick as soon as possible
  // 1 ms general tick
  if (SysTick_Config(SystemCoreClock / 1000)) // 1 ms (1000 Hz)
-  panic(20);
+  panic(SYSTICK_OOPS);
 }
 
 void beep(u32 t)
 {
- if (!status.sound)
-   return;
  if (!status.buzzer_on) {
    status.buzzer_timer = (t * 10);
    status.buzzer_on = 1;
@@ -57,7 +55,6 @@ void buzzer_init()
  GPIO_Init(GPIOC, &gpio);
 
  buzzer(0);
- status.sound = 1;
 
  RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
  NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;

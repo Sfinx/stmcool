@@ -96,7 +96,7 @@ LINKER       = $(BOARD)
 
 # source list
 
-SRC  = main.c
+SRC  = app.c
 SRC += lib.c
 SRC += handlers.c
 SRC += $(CORELIBDIR)/core_cm3.c

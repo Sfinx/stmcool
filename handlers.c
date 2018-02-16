@@ -4,42 +4,42 @@
 
 void NMIException(void)
 {
- panic(0);
+ panic(NMI_OOPS);
 }
 
 void HardFaultException(void)
 {
- panic(1);
+ panic(HARDFAULT_OOPS);
 }
 
 void MemManageException(void)
 {
- panic(2);
+ panic(MEMMANAGE_OOPS);
 }
 
 void BusFaultException(void)
 {
- panic(3);
+ panic(BUSFAULT_OOPS);
 }
 
 void UsageFaultException(void)
 {
- panic(4);
+ panic(USAGEFAULT_OOPS);
 }
 
 void DebugMonitor(void)
 {
- panic(5);
+ panic(DEBUGMONITOR_OOPS);
 }
 
 void SVCHandler(void)
 {
- panic(6);
+ panic(SVC_OOPS);
 }
 
 void PendSVC(void)
 {
- panic(7);
+ panic(PEND_SVC_OOPS);
 }
 
 // 1ms tick (1000 Hz)
@@ -65,7 +65,7 @@ void TIM2_IRQHandler(void)
    TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
    if (!status.buzzer_timer--)
      buzzer(0);
-   if (status.buzzer_on && (buzzer_cnt++)) { // buzzer_cnt - freq divider
+   if (status.buzzer_on && (buzzer_cnt++ > BUZZER_FREQ)) {
      buzzer_cnt = 0;
      toggle_buzzer();
    }
@@ -74,23 +74,26 @@ void TIM2_IRQHandler(void)
 
 void WWDG_IRQHandler(void)
 {
- panic(8);
+ panic(WWDG_OOPS);
 }
 
 void PVD_IRQHandler(void)
 {
- panic(10);
+ panic(PVD_OOPS);
 }
 
 void TAMPER_IRQHandler(void) { }
 
 void RTC_IRQHandler(void) { }
 
-void FLASH_IRQHandler(void) { }
+void FLASH_IRQHandler(void)
+{
+ panic(FLASH_OOPS);
+}
 
 void RCC_IRQHandler(void)
 {
- panic(9);
+ panic(RCC_OOPS);
 }
 
 #define fan_interrupt(x, y) void x ## _IRQHandler(void)\

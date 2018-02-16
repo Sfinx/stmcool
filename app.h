@@ -34,7 +34,6 @@ typedef struct status_t {
   volatile unsigned long long seconds;
   volatile u32 buzzer_timer;
   volatile unsigned buzzer_on:1;
-  volatile unsigned sound:1;
   volatile unsigned short fan[MAX_FANS];
   volatile unsigned short temp[MAX_TEMPS];
 } status_t;
