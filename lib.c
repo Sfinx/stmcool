@@ -1,229 +1,103 @@
 
 #include <app.h>
 
-status_t status;
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follow : 
+  *            System Clock source            = PLL (MSI)
+  *            SYSCLK(Hz)                     = 80000000
+  *            HCLK(Hz)                       = 80000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 1
+  *            APB2 Prescaler                 = 1
+  *            MSI Frequency(Hz)              = 4000000
+  *            PLL_M                          = 1
+  *            PLL_N                          = 40
+  *            PLL_R                          = 2
+  *            PLL_P                          = 7
+  *            PLL_Q                          = 4
+  *            Flash Latency(WS)              = 4
+  */
 
-void systick_init()
+static void SystemClock_Config(void)
 {
- status._1ms_tick = 1000; // do the first tick as soon as possible
- // 1 ms general tick
- if (SysTick_Config(SystemCoreClock / 1000)) // 1 ms (1000 Hz)
-  panic(SYSTICK_OOPS);
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+
+  // MSI is enabled after System reset, activate PLL with MSI as source
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
+  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
+  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
+  RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
+  RCC_OscInitStruct.PLL.PLLM = 1;
+  RCC_OscInitStruct.PLL.PLLN = 40;
+  RCC_OscInitStruct.PLL.PLLR = 2;
+  RCC_OscInitStruct.PLL.PLLP = 7;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
+  if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    panic(SYSTEMCLOCK_OOPS);
+  // Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
+  //   clocks dividers
+  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;  
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;  
+  if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+    panic(SYSTEMCLOCK_OOPS);
 }
 
-void beep(u32 t)
-{
- if (!status.buzzer_on) {
-   status.buzzer_timer = (t * 10);
-   status.buzzer_on = 1;
- }
+#ifdef  USE_FULL_ASSERT
+void assert_failed(char *file, uint32_t line)
+{ 
+ debug("Assert faild at %s:%d\r\n", file, line);
+ while (1);
 }
+#endif
 
-void set_buzzer(u32 on)
+static GPIO_TypeDef *GPIO_PORT[LEDn] = {LED4_GPIO_PORT};
+static const uint16_t GPIO_PIN[LEDn] = {LED4_PIN};
+
+void set_leds(uint on)
 {
  if (on)
-   GPIO_SetBits(GPIOC, BUZZER_PIN);
+   HAL_GPIO_WritePin(GPIO_PORT[0], GPIO_PIN[0], GPIO_PIN_SET);
  else
-   GPIO_ResetBits(GPIOC, BUZZER_PIN);
-}
-
-void buzzer(u32 on)
-{
- status.buzzer_on = on;
- set_buzzer(on);
-}
-
-void toggle_buzzer()
-{
- if (GPIO_ReadOutputDataBit(GPIOC, BUZZER_PIN))
-   set_buzzer(0);
- else
-   set_buzzer(1);
-}
-
-void buzzer_init()
-{
- NVIC_InitTypeDef NVIC_InitStructure;
- TIM_TimeBaseInitTypeDef TIM_InitStructure; 
- GPIO_InitTypeDef gpio;
-
- GPIO_StructInit(&gpio);
- RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
- gpio.GPIO_Pin = BUZZER_PIN;
- gpio.GPIO_Speed = GPIO_Speed_2MHz;
- gpio.GPIO_Mode = GPIO_Mode_Out_PP; 
- GPIO_Init(GPIOC, &gpio);
-
- buzzer(0);
-
- RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
- NVIC_InitStructure.NVIC_IRQChannel = TIM2_IRQn;
- NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1; // buzzer priority
- NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
- NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
- NVIC_Init(&NVIC_InitStructure);
-
- TIM_TimeBaseStructInit(&TIM_InitStructure);
- TIM_InitStructure.TIM_Prescaler = 1000;
- TIM_InitStructure.TIM_Period = 4;
- TIM_InitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
- TIM_InitStructure.TIM_CounterMode = TIM_CounterMode_Up;
- TIM_TimeBaseInit(TIM2, &TIM_InitStructure);
- TIM_Cmd(TIM2, ENABLE);
-
- TIM_ClearFlag(TIM2, TIM_FLAG_Update);
- TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE);
- TIM_ClearFlag(TIM2, TIM_FLAG_Update);
-}
-
-// C0 - C4 fans
-void fan_sensors_init()
-{
- uint i;
- GPIO_InitTypeDef gpio;
-
- GPIO_StructInit(&gpio);
-
- RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
-
- gpio.GPIO_Pin = (FAN0 | FAN1 | FAN2 | FAN3 |FAN4);
- gpio.GPIO_Mode = GPIO_Mode_IPU;
- GPIO_Init(GPIOC, &gpio);
-
- EXTI_InitTypeDef EXTI_InitStruct;
- NVIC_InitTypeDef NVIC_InitStruct;
- EXTI_StructInit(&EXTI_InitStruct);
- // enable clock for alternate function (EXTI)
- RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
- // Add IRQ vector to NVIC
- // PBx is connected to EXTI_Linex, which has EXTIx_IRQn vector
- for (i = 0; i < MAX_FANS; i++) {
-   NVIC_InitStruct.NVIC_IRQChannel = EXTI0_IRQn + i;
-   // Set priorities
-   NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0xF;
-   NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0xF;
-   NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
-   // Add to NVIC
-   NVIC_Init(&NVIC_InitStruct);
-   // Tell system that you will use PCx for EXTI_Linex
-   GPIO_EXTILineConfig(GPIO_PortSourceGPIOC, GPIO_PinSource0 + i);
- }
-
- EXTI_InitStruct.EXTI_Line = (EXTI_Line0 | EXTI_Line1 | EXTI_Line2 | EXTI_Line3 | EXTI_Line4);
- // Enable interrupt
- EXTI_InitStruct.EXTI_LineCmd = ENABLE;
- // Interrupt mode
- EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
- // Triggers on rising and falling edge
- EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
- // Add to EXTI
- EXTI_Init(&EXTI_InitStruct);
+   HAL_GPIO_WritePin(GPIO_PORT[0], GPIO_PIN[0], GPIO_PIN_RESET);
 }
 
 void leds_init()
 {
- GPIO_InitTypeDef gpio;
- GPIO_StructInit(&gpio);
- RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
- gpio.GPIO_Pin = (GREEN_LED | BLUE_LED);
- gpio.GPIO_Speed = GPIO_Speed_2MHz;
- gpio.GPIO_Mode = GPIO_Mode_Out_PP; 
- GPIO_Init(GPIOC, &gpio);
-}
-
-// PB5 - PB10
-void temp_sensors_init()
-{
- GPIO_InitTypeDef gpio;
- GPIO_StructInit(&gpio);
- RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
- gpio.GPIO_Pin = (TEMP0);
- gpio.GPIO_Speed = GPIO_Speed_10MHz;
- gpio.GPIO_Mode = GPIO_Mode_IN_FLOATING;
- GPIO_Init(GPIOB, &gpio); 
-
- EXTI_InitTypeDef EXTI_InitStruct;
- NVIC_InitTypeDef NVIC_InitStruct;
- EXTI_StructInit(&EXTI_InitStruct);
- // enable clock for alternate function (EXTI)
- RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
- // Add IRQ vector to NVIC
- // PBx is connected to EXTI_Linex, which has EXTIx_IRQn vector
- NVIC_InitStruct.NVIC_IRQChannel = EXTI9_5_IRQn;
- // Set priorities
- NVIC_InitStruct.NVIC_IRQChannelPreemptionPriority = 0xF;
- NVIC_InitStruct.NVIC_IRQChannelSubPriority = 0xF;
- NVIC_InitStruct.NVIC_IRQChannelCmd = ENABLE;
- // Add to NVIC
- NVIC_Init(&NVIC_InitStruct);
- // Tell system that you will use PCx for EXTI_Linex
- GPIO_EXTILineConfig(GPIO_PortSourceGPIOB, GPIO_PinSource5);
-
- EXTI_InitStruct.EXTI_Line = EXTI_Line5;
- // Enable interrupt
- EXTI_InitStruct.EXTI_LineCmd = ENABLE;
- // Interrupt mode
- EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
- // Triggers on rising and falling edge
- EXTI_InitStruct.EXTI_Trigger = EXTI_Trigger_Rising;
- // Add to EXTI
- EXTI_Init(&EXTI_InitStruct);
+ GPIO_InitTypeDef  GPIO_InitStruct = {0};
+ __GPIOB_CLK_ENABLE();
+ GPIO_InitStruct.Pin   = GPIO_PIN[0];
+ GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+ GPIO_InitStruct.Pull  = GPIO_NOPULL;
+ GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+ HAL_GPIO_Init(GPIO_PORT[0], &GPIO_InitStruct);
 }
 
 void board_init()
 {
- memset(&status, 0, sizeof(status));
- systick_init();
- leds_init();
- buzzer_init();
- fan_sensors_init();
- temp_sensors_init();
- SEGGER_RTT_printf(0, "%sPowered On\n\r%s", RTT_CTRL_TEXT_GREEN, RTT_CTRL_RESET);
-}
-
-void set_led(uint led, int on)
-{
- if (on)
-   GPIO_SetBits(GPIOC, led);
- else
-   GPIO_ResetBits(GPIOC, led);
-}
-
-void led_toggle(uint led)
-{
- if (GPIO_ReadOutputDataBit(GPIOC, led))
-   set_led(led, 0);
- else
-   set_led(led, 1);
-}
-
-void set_leds(int v)
-{
- set_led(GREEN_LED, v);
- set_led(BLUE_LED, v);
-}
-
-void hard_elay(vu32 nCount)
-{
- for(; nCount != 0; nCount--);
+  /* STM32L4xx HAL library initialization:
+       - Configure the Flash prefetch and Buffer caches
+       - Systick timer is configured by default as source of time base, but user
+             can eventually implement his proper time base source (a general purpose
+             timer for example or other time source), keeping in mind that Time base
+             duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and
+             handled in milliseconds basis.
+       - Low Level Initialization
+     */
+  HAL_Init();
+  // Configure the System clock to have a frequency of 80 MHz
+  SystemClock_Config();
+  leds_init();
 }
 
 void panic(int i)
 {
- while(1) {
-  SEGGER_RTT_printf(0, "%sOops [%d] !\r\n%s", RTT_CTRL_BG_BRIGHT_RED, i, RTT_CTRL_RESET);
-  set_leds(1);
-  hard_elay(0x9FFFFF);
-  set_leds(0);
-  hard_elay(0x9FFFFF);
- }
-}
-
-void hard_delay_mks(u32 mks)
-{
- volatile u32 nCount;
- RCC_ClocksTypeDef RCC_Clocks;
- RCC_GetClocksFreq (&RCC_Clocks);
- nCount = (RCC_Clocks.HCLK_Frequency / 10000000) * mks;
- for (; nCount !=0 ; nCount--);
+ SEGGER_RTT_printf(0, "%sOops [%d] !\r\n%s", RTT_CTRL_BG_BRIGHT_RED, i, RTT_CTRL_RESET);
+ while(1);
 }

@@ -1,5 +1,6 @@
 log /dev/null
 r
-loadbin main.bin 0
+erase
+loadbin stmcool.bin 0x8000000
 r
 g

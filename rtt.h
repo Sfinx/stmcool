@@ -5,3 +5,5 @@
 #else
 #include <SEGGER_RTT.h>
 #endif
+
+#define debug(x)	SEGGER_RTT_printf(0, x)

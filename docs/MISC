@@ -1,0 +1,19 @@
+
+Board config
+============
+
+	edit conf lib/board/inc/stm32l4xx_hal_conf.h
+
+Bootloader
+==========
+
+	mem32 0x1FFF6FFE 1
+	1FFF6FFE = FFFF0091
+	X = 9: USART, CAN, DFU, I2C and SPI are used
+
+TOSEE
+=====
+
+	https://github.com/GrumpyOldPizza/arduino-STM32L4
+	libopencm3
+	bootloader https://github.com/devanlai/dapboot

@@ -1,5 +1,4 @@
 
-- get the NUCLEO-L433RC-P board
 - port current code to STM32L433
 - create the demo board
 - test the things
