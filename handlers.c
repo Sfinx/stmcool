@@ -1,6 +1,5 @@
 
 #include "app.h"
-#include "stm32l4xx_it.h"
 
 void NMI_Handler(void)
 {

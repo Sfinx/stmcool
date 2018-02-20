@@ -90,7 +90,7 @@ SRC     += rtt/RTT/SEGGER_RTT_printf.c
 endif
 
 # List ASM source files here
-ASRC = $(STARTUP)/startup_stm32l433xx.s
+ASRC = $(DEVDIR)/Source/Templates/gcc/startup_stm32l433xx.s
 
 # List all user directories here
 UINCDIR  = $(DEVDIRINC)
