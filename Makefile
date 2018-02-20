@@ -1,7 +1,7 @@
 
 JLINKDIR    = ../j-link/jlink/
 # 100000
-JLINKSPEED  = 4000
+JLINKSPEED  = 400
 JLINKDEVICE = STM32L433RC
 
 TRGT = arm-none-eabi-
@@ -169,6 +169,9 @@ clean:
 todo:
 	@cat TODO
 	@echo
+
+dfu:	all
+	-dfu-util --alt 0 -s 0x08000000 -D $(PROJECT).bin
 
 prg:	all
 	-$(JLINKDIR)/JLinkExe -if SWD -speed $(JLINKSPEED) -device $(JLINKDEVICE) -AutoConnect 1 -CommandFile prg.cmd
