@@ -1,4 +1,5 @@
 
+- check DFU app restart with original stm tool
 - port current code to STM32L433
 - create the demo board
 - test the things

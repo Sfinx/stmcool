@@ -173,6 +173,9 @@ todo:
 dfu:	all
 	-dfu-util --alt 0 -s 0x08000000 -D $(PROJECT).bin
 
+stlink:	all
+	-st-flash write $(PROJECT).bin 0x08000000
+
 prg:	all
 	-$(JLINKDIR)/JLinkExe -if SWD -speed $(JLINKSPEED) -device $(JLINKDEVICE) -AutoConnect 1 -CommandFile prg.cmd
 
