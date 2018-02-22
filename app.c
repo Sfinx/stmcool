@@ -13,8 +13,24 @@ int main(void)
  }
 }
 
+u32 get_fan(u8 fan)
+{
+ u32 f = (status.fan[fan]*60)/2;
+ status.fan[fan] = 0;
+ return f;
+}
+
+#ifdef USE_RTT
+static int counter;
+#endif
+
 void _1_sec_tick()
 {
+#ifdef USE_RTT
+ uint i = 0;
+ for (; i < MAX_RPM_SENSORS; i++)
+   debug("%d: fan%d:%d\r\n", counter++, i, get_fan(i));
+#endif
 }
 
 void _100_ms_tick()

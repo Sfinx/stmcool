@@ -187,4 +187,7 @@ dbg:	all
 view:
 	-$(JLINKDIR)/JLinkRTTClient
 
+push:
+	-git push origin
+
 -include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)

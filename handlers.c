@@ -63,4 +63,17 @@ void TIM2_IRQHandler(void)
  HAL_TIM_IRQHandler(&buzz_timer);
 }
 
+void EXTI0_IRQHandler(void)
+{
+ HAL_NVIC_ClearPendingIRQ(EXTI0_IRQn);
+ HAL_GPIO_EXTI_IRQHandler(FAN_GPIO(0));
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t pin)
+{
+ pin--;
+ if ((pin < MAX_RPM_SENSORS) && HAL_GPIO_ReadPin(GPIOC, pin + 1))
+   status.fan[pin]++;
+}
+
 //void PPP_IRQHandler(void)
