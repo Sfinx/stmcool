@@ -1,7 +1,7 @@
 
 JLINKDIR    = ../j-link/jlink/
 # 100000
-JLINKSPEED  = 400
+JLINKSPEED  = 800
 JLINKDEVICE = STM32L433RC
 
 TRGT = arm-none-eabi-
