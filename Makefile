@@ -162,7 +162,7 @@ all: $(OBJS) $(PROJECT).elf $(PROJECT).bin
 
 clean:
 	@rm -f $(OBJS)
-	@rm -f *.elf *.bin *.map *.hex JLink.log
+	@rm -f *.elf *.map *.hex JLink.log
 	@rm -f $(SRC:.c=.c.bak)
 	@rm -f $(SRC:.c=.lst)
 	@rm -f $(ASRC:.s=.s.bak)

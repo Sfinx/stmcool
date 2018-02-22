@@ -3,6 +3,5 @@
 *.lst
 *.elf
 *.hex
-*.bin
 .dep
 JLink.log
