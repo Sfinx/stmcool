@@ -63,17 +63,42 @@ void TIM2_IRQHandler(void)
  HAL_TIM_IRQHandler(&buzz_timer);
 }
 
-void EXTI0_IRQHandler(void)
+#define fan_interrupt(x, y) void x ## _IRQHandler(void) \
+  { \
+    HAL_NVIC_ClearPendingIRQ(EXTI0_IRQn + y); \
+    HAL_GPIO_EXTI_IRQHandler(FAN_GPIO(y)); \
+  }
+
+fan_interrupt(EXTI0, 0)
+fan_interrupt(EXTI1, 1)
+fan_interrupt(EXTI2, 2)
+fan_interrupt(EXTI3, 3)
+fan_interrupt(EXTI4, 4)
+
+void EXTI9_5_IRQHandler(void)
 {
- HAL_NVIC_ClearPendingIRQ(EXTI0_IRQn);
- HAL_GPIO_EXTI_IRQHandler(FAN_GPIO(0));
+ uchar i;
+ for (i = 5; i <= 9; i++) {
+   if (__HAL_GPIO_EXTI_GET_IT(i) != RESET) {
+     HAL_GPIO_EXTI_IRQHandler(FAN_GPIO(i));
+     break;
+   }
+ }
+ HAL_NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t pin)
 {
  pin--;
- if ((pin < MAX_RPM_SENSORS) && HAL_GPIO_ReadPin(GPIOC, pin + 1))
-   status.fan[pin]++;
+ // process fans
+ if (pin < MAX_RPM_SENSORS) {
+   if (HAL_GPIO_ReadPin(GPIOC, pin + 1))
+     status.fan[pin]++;
+   return;
+ }
+ // process temps
+ // ...
+ debug("HAL_GPIO_EXTI_Callback: temp%d\r\n", pin);
 }
 
 //void PPP_IRQHandler(void)
