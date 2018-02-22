@@ -41,9 +41,26 @@ void PendSV_Handler(void)
  panic(PEND_SVC_OOPS);
 }
 
+static ushort ms_cnt = 100;
+
+// happens each 1ms
 void SysTick_Handler(void)
 {
  HAL_IncTick();
+ // HAL_SYSTICK_IRQHandler();
+ if (!(ms_cnt++ % 100))
+   _100_ms_tick();   
+ if (ms_cnt == 1000) {
+   ms_cnt = 0;
+   _1_sec_tick();
+ }
+}
+
+extern TIM_HandleTypeDef buzz_timer;
+
+void TIM2_IRQHandler(void)
+{
+ HAL_TIM_IRQHandler(&buzz_timer);
 }
 
 //void PPP_IRQHandler(void)

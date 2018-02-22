@@ -4,6 +4,9 @@
 #include "stm32l4xx_hal.h"
 #include "rtt.h"
 
+typedef uint32_t u32;
+typedef uint16_t ushort;
+
 extern void panic(int);
 
 typedef enum oops_t {
@@ -23,5 +26,8 @@ typedef enum oops_t {
     SYSTEMCLOCK_OOPS	// 13
 } oops_t;
 
+#define BUZZER_FREQ	7
+
 extern void board_init();
 extern void set_leds(uint on);
+extern void beep(u32 t);

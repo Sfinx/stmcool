@@ -1,5 +1,62 @@
 
 #include <app.h>
+#include <string.h>
+
+void beep(u32 t)
+{
+ if (!status.buzzer_on) {
+   status.buzzer_timer = (t * 10);
+   status.buzzer_on = 1;
+ }
+}
+
+void buzzer(u32 on)
+{
+ status.buzzer_on = on;
+ HAL_GPIO_WritePin(GPIOA, BUZZER_PIN, on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+TIM_HandleTypeDef buzz_timer = { 
+  .Instance = TIM2
+};
+
+static u32 buzzer_cnt;
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+ if (!status.buzzer_timer--)
+   buzzer(0);
+ if (status.buzzer_on && (buzzer_cnt++ > BUZZER_FREQ)) {
+   buzzer_cnt = 0;
+   // toggle buzzer
+   HAL_GPIO_TogglePin(GPIOA, BUZZER_PIN);
+ }
+}
+
+void buzzer_init()
+{
+ GPIO_InitTypeDef  GPIO_InitStruct = {0}; 
+
+ __GPIOA_CLK_ENABLE();
+ GPIO_InitStruct.Pin   = BUZZER_PIN;
+ GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+ GPIO_InitStruct.Pull  = GPIO_NOPULL;
+ GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+ HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+ buzzer(0);
+ __TIM2_CLK_ENABLE();
+ buzz_timer.Init.Prescaler = 1000;
+ buzz_timer.Init.Period = 4;
+ buzz_timer.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+ buzz_timer.Init.CounterMode = TIM_COUNTERMODE_UP;
+ buzz_timer.Init.RepetitionCounter = 0;
+ HAL_TIM_Base_Init(&buzz_timer);
+ HAL_TIM_Base_Start_IT(&buzz_timer);
+ // HAL_NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_0);
+ HAL_NVIC_SetPriority(TIM2_IRQn, 0, 0);
+ HAL_NVIC_EnableIRQ(TIM2_IRQn);
+}
 
 /**
   * @brief  System Clock Configuration
@@ -81,19 +138,13 @@ void leds_init()
 
 void board_init()
 {
-  /* STM32L4xx HAL library initialization:
-       - Configure the Flash prefetch and Buffer caches
-       - Systick timer is configured by default as source of time base, but user
-             can eventually implement his proper time base source (a general purpose
-             timer for example or other time source), keeping in mind that Time base
-             duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and
-             handled in milliseconds basis.
-       - Low Level Initialization
-     */
-  HAL_Init();
-  // Configure the System clock to have a frequency of 80 MHz
-  SystemClock_Config();
-  leds_init();
+ memset(&status, 0, sizeof(status));
+ HAL_Init();
+ SystemClock_Config();
+ leds_init();
+ buzzer_init();
+ SEGGER_RTT_printf(0, "%sstmcool powered on\n\r%s", RTT_CTRL_TEXT_GREEN, RTT_CTRL_RESET);
+
 }
 
 void panic(int i)

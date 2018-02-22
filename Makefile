@@ -67,6 +67,8 @@ SRC += $(DRIVERSERC)/stm32l4xx_hal_rcc.c
 SRC += $(DRIVERSERC)/stm32l4xx_hal_pwr.c
 SRC += $(DRIVERSERC)/stm32l4xx_hal_pwr_ex.c
 SRC += $(DRIVERSERC)/stm32l4xx_hal_gpio.c
+SRC += $(DRIVERSERC)/stm32l4xx_hal_tim.c
+SRC += $(DRIVERSERC)/stm32l4xx_hal_tim_ex.c
 
 #SRC += lib.c
 #SRC += handlers.c
