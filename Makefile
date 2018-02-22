@@ -159,35 +159,37 @@ all: $(OBJS) $(PROJECT).elf $(PROJECT).bin
 
 %.bin: %.elf
 	$(BIN) $< $@
+
 clean:
-	-rm -f $(OBJS)
-	-rm -f *.elf *.bin *.map *.hex JLink.log
-	-rm -f $(SRC:.c=.c.bak)
-	-rm -f $(SRC:.c=.lst)
-	-rm -f $(ASRC:.s=.s.bak)
-	-rm -f $(ASRC:.s=.lst)
-	-rm -fR .dep
+	@rm -f $(OBJS)
+	@rm -f *.elf *.bin *.map *.hex JLink.log
+	@rm -f $(SRC:.c=.c.bak)
+	@rm -f $(SRC:.c=.lst)
+	@rm -f $(ASRC:.s=.s.bak)
+	@rm -f $(ASRC:.s=.lst)
+	@rm -fR .dep
+	@echo Clean done
 
 todo:
 	@cat TODO
 	@echo
 
 dfu:	all
-	-dfu-util --alt 0 -s 0x08000000 -D $(PROJECT).bin
+	@dfu-util --alt 0 -s 0x08000000 -D $(PROJECT).bin
 
 stlink:	all
-	-st-flash write $(PROJECT).bin 0x08000000
+	@st-flash write $(PROJECT).bin 0x08000000
 
 prg:	all
-	-$(JLINKDIR)/JLinkExe -if SWD -speed $(JLINKSPEED) -device $(JLINKDEVICE) -AutoConnect 1 -CommandFile prg.cmd
+	@$(JLINKDIR)/JLinkExe -if SWD -speed $(JLINKSPEED) -device $(JLINKDEVICE) -AutoConnect 1 -CommandFile prg.cmd
 
 dbg:	all
-	-$(JLINKDIR)/JLinkExe -if SWD -speed $(JLINKSPEED) -device $(JLINKDEVICE) -AutoConnect 1 -CommandFile dbg.cmd
+	@$(JLINKDIR)/JLinkExe -if SWD -speed $(JLINKSPEED) -device $(JLINKDEVICE) -AutoConnect 1 -CommandFile dbg.cmd
 
 view:
-	-$(JLINKDIR)/JLinkRTTClient
+	@$(JLINKDIR)/JLinkRTTClient
 
 push:
-	-git push origin
+	@git push origin
 
 -include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)
