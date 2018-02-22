@@ -14,7 +14,7 @@
 // RPMS's at C0-C8
 #define MAX_RPM_SENSORS		8
 
-#define FAN_GPIO(x)		(GPIO_PIN_0 + x)
+#define FAN_GPIO(x)		(GPIO_PIN_0 << x)
 
 // TEMP's at C9-C15
 #define MAX_TEMP_SENSORS 	8

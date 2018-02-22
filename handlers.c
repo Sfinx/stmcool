@@ -79,7 +79,7 @@ void EXTI9_5_IRQHandler(void)
 {
  uchar i;
  for (i = 5; i <= 9; i++) {
-   if (__HAL_GPIO_EXTI_GET_IT(i) != RESET) {
+   if (__HAL_GPIO_EXTI_GET_IT(FAN_GPIO(i)) != RESET) {
      HAL_GPIO_EXTI_IRQHandler(FAN_GPIO(i));
      break;
    }
@@ -89,16 +89,16 @@ void EXTI9_5_IRQHandler(void)
 
 void HAL_GPIO_EXTI_Callback(uint16_t pin)
 {
- pin--;
+ u8 pin_num = __builtin_ctz(pin);
  // process fans
- if (pin < MAX_RPM_SENSORS) {
-   if (HAL_GPIO_ReadPin(GPIOC, pin + 1))
-     status.fan[pin]++;
+ if (pin_num < MAX_RPM_SENSORS) {
+   if (HAL_GPIO_ReadPin(GPIOC, pin))
+     status.fan[pin_num]++;
    return;
  }
  // process temps
  // ...
- debug("HAL_GPIO_EXTI_Callback: temp%d\r\n", pin);
+ debug("HAL_GPIO_EXTI_Callback: temp%d\r\n", pin_num);
 }
 
 //void PPP_IRQHandler(void)

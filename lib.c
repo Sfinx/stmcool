@@ -117,7 +117,7 @@ void leds_init()
 
 void fan_sensors_init()
 {
- uint i;
+ uchar i;
  GPIO_InitTypeDef gpio = { 0 };
  __GPIOC_CLK_ENABLE();
  gpio.Pin = (FAN_GPIO(0) | FAN_GPIO(1) | FAN_GPIO(2) | FAN_GPIO(3) | FAN_GPIO(4) | FAN_GPIO(5) |
@@ -127,10 +127,12 @@ void fan_sensors_init()
  gpio.Speed = GPIO_SPEED_FREQ_HIGH;
  HAL_GPIO_Init(GPIOC, &gpio);
  // fans are connected to EXTI_Line[0..7], which has EXTI[0..7]_IRQn vector
- for (i = 0; i < MAX_RPM_SENSORS; i++) {
+ for (i = 0; i < 5; i++) {
    HAL_NVIC_SetPriority(EXTI0_IRQn + i, 0, 0);
    HAL_NVIC_EnableIRQ(EXTI0_IRQn + i);
  }
+ HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
+ HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 }
 
 void board_init()
