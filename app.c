@@ -6,9 +6,9 @@ int main(void)
  board_init();
  beep(300);
  while (1) {
-   set_leds(1);
+   set_led(GREEN_LED, 1);
    HAL_Delay(LED_DELAY);
-   set_leds(0);
+   set_led(GREEN_LED, 0);
    HAL_Delay(LED_DELAY);
  }
 }

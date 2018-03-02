@@ -96,23 +96,46 @@ void assert_failed(char *file, uint32_t line)
 }
 #endif
 
-void set_leds(uint on)
+void set_led(uchar led, uchar on)
 {
+ GPIO_TypeDef* bus;
+ uint16_t pin;
+
+ switch (led) {
+   case RED_LED:
+     bus = GPIOA;
+     pin = RED_LED_PIN;
+     break;
+   case GREEN_LED:
+     bus = GPIOH;
+     pin = GREEN_LED_PIN;
+     break;
+   case BLUE_LED:
+     bus = GPIOH;
+     pin = BLUE_LED_PIN;
+     break;
+ }
  if (on)
-   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_SET);
+   HAL_GPIO_WritePin(bus, pin, GPIO_PIN_RESET);
  else
-   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_13, GPIO_PIN_RESET);
+   HAL_GPIO_WritePin(bus, pin, GPIO_PIN_SET);
 }
 
 void leds_init()
 {
  GPIO_InitTypeDef gpio = { 0 };
- __GPIOB_CLK_ENABLE();
- gpio.Pin   = GPIO_PIN_13;
+ __GPIOH_CLK_ENABLE();
+ gpio.Pin   = GREEN_LED_PIN | BLUE_LED_PIN;
  gpio.Mode  = GPIO_MODE_OUTPUT_PP;
  gpio.Pull  = GPIO_NOPULL;
  gpio.Speed = GPIO_SPEED_FREQ_HIGH;
- HAL_GPIO_Init(GPIOB, &gpio);
+ HAL_GPIO_Init(GPIOH, &gpio);
+ __GPIOA_CLK_ENABLE();
+ gpio.Pin   = RED_LED_PIN;
+ HAL_GPIO_Init(GPIOA, &gpio);
+ set_led(RED_LED, 0);
+ set_led(GREEN_LED, 0);
+ set_led(BLUE_LED, 0);
 }
 
 void fan_sensors_init()
@@ -141,8 +164,8 @@ void board_init()
  HAL_Init();
  SystemClock_Config();
  leds_init();
- buzzer_init();
- fan_sensors_init();
+ // buzzer_init();
+ // fan_sensors_init();
  debug("%sstmcool powered on\n\r%s", RTT_CTRL_TEXT_GREEN, RTT_CTRL_RESET);
 }
 

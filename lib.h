@@ -32,5 +32,5 @@ typedef enum oops_t {
 #define BUZZER_FREQ	7
 
 extern void board_init();
-extern void set_leds(uint on);
+extern void set_led(uchar led, uchar on);
 extern void beep(u32 t);

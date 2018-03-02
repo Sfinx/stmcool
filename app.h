@@ -3,10 +3,20 @@
 
 #include <lib.h>
 
-#define LED_DELAY  		100
+#define LED_DELAY  		500
 
-// Nucleo LED pin at B13
-#define LED_PIN         	GPIO_PIN_13
+// Red LED - PA1
+#define RED_LED_PIN         	GPIO_PIN_1
+// Green LED - PH0
+#define GREEN_LED_PIN         	GPIO_PIN_0
+// Blue LED - PH1
+#define BLUE_LED_PIN         	GPIO_PIN_1
+
+typedef enum leds_t {
+    RED_LED,
+    GREEN_LED,
+    BLUE_LED
+} leds_t;
 
 // buzzer at PA0
 #define BUZZER_PIN      	GPIO_PIN_0
