@@ -18,14 +18,28 @@ typedef enum leds_t {
     BLUE_LED
 } leds_t;
 
-// buzzer at PB11
-#define BUZZER_PIN      	GPIO_PIN_11
-#define BUZZER_GPIO		GPIOB
+// buzzer at PB4 (SO)
+#define BUZZER_PIN      	GPIO_PIN_4
+#define BUZZER_GPIO_BUS		GPIOB
+#define BUZZER_GPIO_CLK_ENABLE	__GPIOB_CLK_ENABLE
 
-// RPMS's at C0-C8
+// RPMS's at buttefly D0-D7
 #define MAX_RPM_SENSORS		8
 
-#define FAN_GPIO(x)		(GPIO_PIN_0 << x)
+#define FAN0_GPIO		(GPIO_PIN_11)
+#define FAN1_GPIO		(GPIO_PIN_10)
+#define FAN2_GPIO		(GPIO_PIN_12)
+#define FAN3_GPIO		(GPIO_PIN_13)
+#define FAN4_GPIO		(GPIO_PIN_14)
+#define FAN5_GPIO		(GPIO_PIN_15)
+#define FAN6_GPIO		(GPIO_PIN_8)
+#define FAN7_GPIO		(GPIO_PIN_9)
+
+#define FAN_GPIO_BUS		GPIOB
+#define FAN_GPIO_CLK_ENABLE	__GPIOB_CLK_ENABLE
+
+extern u32 fan2pin(uchar x);
+extern u8 pin2fan(u32 pin);
 
 // TEMP's at C9-C15
 #define MAX_TEMP_SENSORS 	8
@@ -45,3 +59,5 @@ extern status_t status;
 
 extern void _1_sec_tick();
 extern void _100_ms_tick();
+
+#define BEEP_DELAY	300

@@ -13,7 +13,7 @@ void beep(u32 t)
 void buzzer(u32 on)
 {
  status.buzzer_on = on;
- HAL_GPIO_WritePin(BUZZER_GPIO, BUZZER_PIN, on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+ HAL_GPIO_WritePin(BUZZER_GPIO_BUS, BUZZER_PIN, on ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 TIM_HandleTypeDef buzz_timer = { 
@@ -29,7 +29,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
  if (status.buzzer_on && (buzzer_cnt++ > BUZZER_FREQ)) {
    buzzer_cnt = 0;
    // toggle buzzer
-   HAL_GPIO_TogglePin(BUZZER_GPIO, BUZZER_PIN);
+   HAL_GPIO_TogglePin(BUZZER_GPIO_BUS, BUZZER_PIN);
  }
 }
 
@@ -37,12 +37,12 @@ void buzzer_init()
 {
  GPIO_InitTypeDef gpio = { 0 }; 
 
- __GPIOB_CLK_ENABLE();
+ BUZZER_GPIO_CLK_ENABLE();
  gpio.Pin   = BUZZER_PIN;
  gpio.Mode  = GPIO_MODE_OUTPUT_PP;
  gpio.Pull  = GPIO_NOPULL;
  gpio.Speed = GPIO_SPEED_FREQ_HIGH;
- HAL_GPIO_Init(BUZZER_GPIO, &gpio);
+ HAL_GPIO_Init(BUZZER_GPIO_BUS, &gpio);
 
  buzzer(0);
  __TIM2_CLK_ENABLE();
@@ -144,20 +144,22 @@ void fan_sensors_init()
 {
  uchar i;
  GPIO_InitTypeDef gpio = { 0 };
- __GPIOC_CLK_ENABLE();
- gpio.Pin = (FAN_GPIO(0) | FAN_GPIO(1) | FAN_GPIO(2) | FAN_GPIO(3) | FAN_GPIO(4) | FAN_GPIO(5) |
-   FAN_GPIO(6) | FAN_GPIO(7));
+ FAN_GPIO_CLK_ENABLE();
+ gpio.Pin = (FAN0_GPIO | FAN1_GPIO | FAN2_GPIO | FAN3_GPIO | FAN4_GPIO | FAN5_GPIO |
+   FAN6_GPIO | FAN7_GPIO);
  gpio.Mode = GPIO_MODE_IT_RISING;
  gpio.Pull  = GPIO_PULLUP;
  gpio.Speed = GPIO_SPEED_FREQ_HIGH;
- HAL_GPIO_Init(GPIOC, &gpio);
+ HAL_GPIO_Init(FAN_GPIO_BUS, &gpio);
  // fans are connected to EXTI_Line[0..7], which has EXTI[0..7]_IRQn vector
  for (i = 0; i < 5; i++) {
-   HAL_NVIC_SetPriority(EXTI0_IRQn + i, 0, 0);
+   HAL_NVIC_SetPriority(EXTI0_IRQn + i, 2, 0);
    HAL_NVIC_EnableIRQ(EXTI0_IRQn + i);
  }
  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 2, 0);
  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+ HAL_NVIC_SetPriority(EXTI15_10_IRQn, 2, 0);
+ HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 }
 
 ADC_HandleTypeDef hadc1;
@@ -213,9 +215,9 @@ void board_init()
  HAL_Init();
  SystemClock_Config();
  leds_init();
- temp_init();
  buzzer_init();
- // fan_sensors_init();
+ temp_init();
+ fan_sensors_init();
  debug("%sstmcool powered on\n\r%s", RTT_CTRL_TEXT_GREEN, RTT_CTRL_RESET);
 }
 
@@ -232,9 +234,14 @@ void panic(int i)
  leds_off();
  debug("%sOops [%d] !\r\n%s", RTT_CTRL_BG_BRIGHT_RED, i, RTT_CTRL_RESET);
  while(1) {
+   static char count;
    set_led(RED_LED, 1);
    HAL_Delay(PANIC_DELAY);
    set_led(RED_LED, 0);
    HAL_Delay(PANIC_DELAY);
+   if (++count > 2) {
+     beep(BEEP_DELAY * 2);
+     count = 0;
+   }
  }
 }

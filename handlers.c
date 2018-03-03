@@ -68,7 +68,7 @@ void TIM2_IRQHandler(void)
 #define fan_interrupt(x, y) void x ## _IRQHandler(void) \
   { \
     HAL_NVIC_ClearPendingIRQ(EXTI0_IRQn + y); \
-    HAL_GPIO_EXTI_IRQHandler(FAN_GPIO(y)); \
+    HAL_GPIO_EXTI_IRQHandler((GPIO_PIN_0 << y)); \
   }
 
 fan_interrupt(EXTI0, 0)
@@ -79,28 +79,39 @@ fan_interrupt(EXTI4, 4)
 
 void EXTI9_5_IRQHandler(void)
 {
+ // process fans
  uchar i;
- for (i = 5; i <= 9; i++) {
-   if (__HAL_GPIO_EXTI_GET_IT(FAN_GPIO(i)) != RESET) {
-     HAL_GPIO_EXTI_IRQHandler(FAN_GPIO(i));
+ for (i = 8; i <= 9; i++) {
+   if (__HAL_GPIO_EXTI_GET_IT((GPIO_PIN_0 << i)) != RESET) {
+     HAL_GPIO_EXTI_IRQHandler((GPIO_PIN_0 << i));
      break;
    }
  }
  HAL_NVIC_ClearPendingIRQ(EXTI9_5_IRQn);
 }
 
+void EXTI15_10_IRQHandler(void)
+{
+ uchar i;
+ for (i = 10; i <= 15; i++) {
+   if (__HAL_GPIO_EXTI_GET_IT((GPIO_PIN_0 << i)) != RESET) {
+     HAL_GPIO_EXTI_IRQHandler((GPIO_PIN_0 << i));
+     break;
+   }
+ }
+ HAL_NVIC_ClearPendingIRQ(EXTI15_10_IRQn);
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t pin)
 {
  u8 pin_num = __builtin_ctz(pin);
- // process fans
- if (pin_num < MAX_RPM_SENSORS) {
-   if (HAL_GPIO_ReadPin(GPIOC, pin))
-     status.fan[pin_num]++;
-   return;
+ if (pin_num >= 8) {
+   if (HAL_GPIO_ReadPin(FAN_GPIO_BUS, (GPIO_PIN_0 << pin_num)))
+     status.fan[pin2fan(pin_num)]++;
+ } else {
+   // process temps
+   debug("HAL_GPIO_EXTI_Callback: temp%d\r\n", pin_num);
  }
- // process temps
- // ...
- debug("HAL_GPIO_EXTI_Callback: temp%d\r\n", pin_num);
 }
 
 //void PPP_IRQHandler(void)
