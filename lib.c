@@ -13,7 +13,7 @@ void beep(u32 t)
 void buzzer(u32 on)
 {
  status.buzzer_on = on;
- HAL_GPIO_WritePin(GPIOA, BUZZER_PIN, on ? GPIO_PIN_SET : GPIO_PIN_RESET);
+ HAL_GPIO_WritePin(BUZZER_GPIO, BUZZER_PIN, on ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 TIM_HandleTypeDef buzz_timer = { 
@@ -29,7 +29,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
  if (status.buzzer_on && (buzzer_cnt++ > BUZZER_FREQ)) {
    buzzer_cnt = 0;
    // toggle buzzer
-   HAL_GPIO_TogglePin(GPIOA, BUZZER_PIN);
+   HAL_GPIO_TogglePin(BUZZER_GPIO, BUZZER_PIN);
  }
 }
 
@@ -37,12 +37,12 @@ void buzzer_init()
 {
  GPIO_InitTypeDef gpio = { 0 }; 
 
- __GPIOA_CLK_ENABLE();
+ __GPIOB_CLK_ENABLE();
  gpio.Pin   = BUZZER_PIN;
  gpio.Mode  = GPIO_MODE_OUTPUT_PP;
  gpio.Pull  = GPIO_NOPULL;
  gpio.Speed = GPIO_SPEED_FREQ_HIGH;
- HAL_GPIO_Init(GPIOA, &gpio);
+ HAL_GPIO_Init(BUZZER_GPIO, &gpio);
 
  buzzer(0);
  __TIM2_CLK_ENABLE();
@@ -114,6 +114,8 @@ void set_led(uchar led, uchar on)
      bus = GPIOH;
      pin = BLUE_LED_PIN;
      break;
+   default:
+     return;
  }
  if (on)
    HAL_GPIO_WritePin(bus, pin, GPIO_PIN_RESET);
@@ -158,19 +160,81 @@ void fan_sensors_init()
  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 }
 
+ADC_HandleTypeDef hadc1;
+
+void temp_init()
+{
+ ADC_ChannelConfTypeDef sConfig;
+ __HAL_RCC_ADC_CLK_ENABLE();
+ hadc1.Instance = ADC1;
+ hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV4;
+ hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+ hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+ hadc1.Init.ContinuousConvMode = DISABLE;
+ hadc1.Init.DiscontinuousConvMode = DISABLE;
+ hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+ hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
+ hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
+ hadc1.Init.NbrOfConversion = 1;
+ hadc1.Init.DMAContinuousRequests = DISABLE;
+ hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
+ hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+ hadc1.Init.OversamplingMode = DISABLE;
+ hadc1.Init.DMAContinuousRequests = DISABLE;
+ if (HAL_ADC_Init(&hadc1) != HAL_OK)
+   panic(ADC_INIT_OOPS);
+ sConfig.Channel = ADC_CHANNEL_TEMPSENSOR;
+ sConfig.Rank = 1;
+ sConfig.SamplingTime = ADC_SAMPLETIME_640CYCLES_5;
+ sConfig.SingleDiff = ADC_SINGLE_ENDED;
+ sConfig.OffsetNumber = ADC_OFFSET_NONE;
+ sConfig.Offset = 0;
+ if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  panic(TEMP_SENSOR_OOPS);
+ while(HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED) != HAL_OK);
+}
+
+#define VDDA_APPLI                       ((uint32_t)3300)
+
+short get_mcu_temp()
+{
+ HAL_ADC_Start(&hadc1);
+ if (HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY) == HAL_OK) {
+   status.mcu_temp = __HAL_ADC_CALC_TEMPERATURE(VDDA_APPLI, HAL_ADC_GetValue(&hadc1), ADC_RESOLUTION_12B);
+   HAL_ADC_Stop(&hadc1);
+ } else
+     status.mcu_temp = -1;
+ return status.mcu_temp;
+}
+
 void board_init()
 {
  memset(&status, 0, sizeof(status));
  HAL_Init();
  SystemClock_Config();
  leds_init();
- // buzzer_init();
+ temp_init();
+ buzzer_init();
  // fan_sensors_init();
  debug("%sstmcool powered on\n\r%s", RTT_CTRL_TEXT_GREEN, RTT_CTRL_RESET);
 }
 
+void leds_off()
+{
+ set_led(RED_LED, 0);
+ set_led(GREEN_LED, 0);
+ set_led(BLUE_LED, 0);
+}
+
 void panic(int i)
 {
+ status.panic = 1;
+ leds_off();
  debug("%sOops [%d] !\r\n%s", RTT_CTRL_BG_BRIGHT_RED, i, RTT_CTRL_RESET);
- while(1);
+ while(1) {
+   set_led(RED_LED, 1);
+   HAL_Delay(PANIC_DELAY);
+   set_led(RED_LED, 0);
+   HAL_Delay(PANIC_DELAY);
+ }
 }

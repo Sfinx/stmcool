@@ -1,15 +1,22 @@
 
 #include "app.h"
 
-int main(void)
+void app()
+{
+ set_led(GREEN_LED, 1);
+ HAL_Delay(LED_DELAY);
+ set_led(GREEN_LED, 0);
+ HAL_Delay(LED_DELAY);
+ debug("mcu_temp: %d C\n", get_mcu_temp());
+}
+
+void main(void)
 {
  board_init();
  beep(300);
  while (1) {
-   set_led(GREEN_LED, 1);
-   HAL_Delay(LED_DELAY);
-   set_led(GREEN_LED, 0);
-   HAL_Delay(LED_DELAY);
+   if (!status.panic)
+     app();
  }
 }
 

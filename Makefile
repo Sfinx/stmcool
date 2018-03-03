@@ -68,6 +68,8 @@ SRC += $(DRIVERSERC)/stm32l4xx_hal_pwr.c
 SRC += $(DRIVERSERC)/stm32l4xx_hal_pwr_ex.c
 SRC += $(DRIVERSERC)/stm32l4xx_hal_gpio.c
 SRC += $(DRIVERSERC)/stm32l4xx_hal_tim.c
+SRC += $(DRIVERSERC)/stm32l4xx_hal_adc.c
+SRC += $(DRIVERSERC)/stm32l4xx_hal_adc_ex.c
 SRC += $(DRIVERSERC)/stm32l4xx_hal_tim_ex.c
 
 #SRC += lib.c
@@ -127,7 +129,7 @@ endif
 ADEFS   = $(DADEFS) $(UADEFS)
 OBJS    = $(ASRC:.s=.o) $(SRC:.c=.o)
 LIBS    = $(DLIBS) $(ULIBS)
-MCFLAGS = -mcpu=$(MCU) -mthumb -flto
+MCFLAGS = -mcpu=$(MCU) -mthumb -flto -ffreestanding
 #MCFLAGS += -msoft-float
 
 ASFLAGS = $(MCFLAGS) -D__thumb2__ -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)

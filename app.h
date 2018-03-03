@@ -18,8 +18,9 @@ typedef enum leds_t {
     BLUE_LED
 } leds_t;
 
-// buzzer at PA0
-#define BUZZER_PIN      	GPIO_PIN_0
+// buzzer at PB11
+#define BUZZER_PIN      	GPIO_PIN_11
+#define BUZZER_GPIO		GPIOB
 
 // RPMS's at C0-C8
 #define MAX_RPM_SENSORS		8
@@ -33,9 +34,11 @@ typedef struct status_t {
   volatile u32 _1ms_tick;
   volatile unsigned long long seconds;
   volatile u32 buzzer_timer;
+  volatile unsigned panic:1;
   volatile unsigned buzzer_on:1;
   volatile unsigned short fan[MAX_RPM_SENSORS];
   volatile unsigned short temp[MAX_TEMP_SENSORS];
+  short mcu_temp;
 } status_t;
 
 extern status_t status;

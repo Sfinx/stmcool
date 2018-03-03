@@ -26,7 +26,9 @@ typedef enum oops_t {
     FLASH_OOPS,		// 10
     RCC_OOPS,		// 11
     SYSTICK_OOPS,	// 12
-    SYSTEMCLOCK_OOPS	// 13
+    SYSTEMCLOCK_OOPS,	// 13
+    ADC_INIT_OOPS,	// 14
+    TEMP_SENSOR_OOPS	// 15
 } oops_t;
 
 #define BUZZER_FREQ	7
@@ -34,3 +36,6 @@ typedef enum oops_t {
 extern void board_init();
 extern void set_led(uchar led, uchar on);
 extern void beep(u32 t);
+extern short get_mcu_temp();
+
+#define PANIC_DELAY	100

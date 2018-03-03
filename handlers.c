@@ -47,6 +47,8 @@ static ushort ms_cnt = 100;
 void SysTick_Handler(void)
 {
  HAL_IncTick();
+ if (status.panic)
+   return;
  // HAL_SYSTICK_IRQHandler();
  if (!(ms_cnt++ % 100))
    _100_ms_tick();   
