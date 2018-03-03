@@ -29,7 +29,8 @@ typedef enum oops_t {
     SYSTICK_OOPS,	// 12
     SYSTEMCLOCK_OOPS,	// 13
     ADC_INIT_OOPS,	// 14
-    TEMP_SENSOR_OOPS	// 15
+    TEMP_SENSOR_OOPS,	// 15
+    FAN_OOPS		// 16
 } oops_t;
 
 #define BUZZER_FREQ	7

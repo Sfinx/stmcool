@@ -57,5 +57,7 @@ uchar p2f[MAX_RPM_SENSORS] = { 6, 7, 1, 0, 2, 3, 4, 5 };
 
 u8 pin2fan(u32 pin)
 {
- return p2f[pin - 8];
+ if (pin < MAX_RPM_SENSORS)
+   panic(FAN_OOPS);
+ return p2f[pin - MAX_RPM_SENSORS];
 }

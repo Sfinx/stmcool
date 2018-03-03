@@ -79,9 +79,8 @@ fan_interrupt(EXTI4, 4)
 
 void EXTI9_5_IRQHandler(void)
 {
- // process fans
  uchar i;
- for (i = 8; i <= 9; i++) {
+ for (i = 5; i <= 9; i++) {
    if (__HAL_GPIO_EXTI_GET_IT((GPIO_PIN_0 << i)) != RESET) {
      HAL_GPIO_EXTI_IRQHandler((GPIO_PIN_0 << i));
      break;
@@ -105,7 +104,7 @@ void EXTI15_10_IRQHandler(void)
 void HAL_GPIO_EXTI_Callback(uint16_t pin)
 {
  u8 pin_num = __builtin_ctz(pin);
- if (pin_num >= 8) {
+ if (pin_num >= 8) { // fans
    if (HAL_GPIO_ReadPin(FAN_GPIO_BUS, (GPIO_PIN_0 << pin_num)))
      status.fan[pin2fan(pin_num)]++;
  } else {
