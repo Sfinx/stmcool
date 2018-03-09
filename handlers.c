@@ -49,6 +49,10 @@ void SysTick_Handler(void)
  HAL_IncTick();
  if (status.panic)
    return;
+ if (status.user_btn != HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) {
+   status.user_btn = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
+   user_btn_cb(status.user_btn);
+ }
  // HAL_SYSTICK_IRQHandler();
  if (!(ms_cnt++ % 100))
    _100_ms_tick();   

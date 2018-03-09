@@ -118,7 +118,7 @@ UINCDIR += $(BOARDINC)
 ULIBDIR =
 
 # List all user libraries here
-ULIBS = -lm
+ULIBS =
 
 # Define optimisation level here
 # -mfpu=vfp -msoft-float -fno-builtin

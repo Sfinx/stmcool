@@ -163,6 +163,18 @@ void leds_init()
  set_led(BLUE_LED, 0);
 }
 
+// PC13
+void user_btn_init()
+{
+ GPIO_InitTypeDef gpio = { 0 };
+ __GPIOC_CLK_ENABLE();
+ gpio.Pin = GPIO_PIN_13;
+ gpio.Pull  = GPIO_NOPULL;
+ gpio.Mode = GPIO_MODE_INPUT;
+ gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+ HAL_GPIO_Init(GPIOC, &gpio);
+}
+
 void fan_sensors_init()
 {
  uchar i;
@@ -256,6 +268,7 @@ void board_init()
  memset(&status, 0, sizeof(status));
  HAL_Init();
  SystemClock_Config();
+ user_btn_init();
  leds_init();
  buzzer_init();
  usb_init();

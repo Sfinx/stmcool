@@ -50,6 +50,7 @@ typedef struct status_t {
   volatile u32 buzzer_timer;
   volatile unsigned panic:1;
   volatile unsigned buzzer_on:1;
+  volatile unsigned user_btn:1;
   volatile unsigned short fan[MAX_RPM_SENSORS];
   volatile unsigned short temp[MAX_TEMP_SENSORS];
   short mcu_temp;

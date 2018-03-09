@@ -49,3 +49,4 @@ extern uint8_t usb_cdc_send_str(const char *s);
 extern uint8_t usb_cdc_printf(const char *fmt, ...);
 extern uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len);
 extern void usb_cdc_send_rx_cb(uint8_t* buf, uint32_t len);
+extern void user_btn_cb(uchar pressed);

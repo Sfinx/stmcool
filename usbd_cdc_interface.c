@@ -129,10 +129,7 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len)
 {
  USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*) USBD_Device.pClassData;
- if (hcdc->TxState != 0) {
-   // debug("cdc_send: Busy\n");
-   return USBD_BUSY;
- }
+ while (hcdc->TxState); // TODO add timeout
  memcpy(UserTxBuffer, buf, len);
  USBD_CDC_SetTxBuffer(&USBD_Device, UserTxBuffer, len);
  return USBD_CDC_TransmitPacket(&USBD_Device);
@@ -168,7 +165,7 @@ uint8_t usb_cdc_printf(const char *fmt, ...)
 static int8_t CDC_Itf_Receive(uint8_t* buf, uint32_t *len)
 {
   if (*len > APP_RX_DATA_SIZE) {
-    // debug("cdc_rx: too big buflen:%d\n", *len);
+    debug("cdc_rx: too big buflen:%d\n", *len);
     return USBD_OK;
   }
   USBD_CDC_SetRxBuffer(&USBD_Device, UserTxBuffer);

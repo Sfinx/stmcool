@@ -45,6 +45,11 @@ void _1_sec_tick()
  usb_cdc_printf("%d: mcu_temp: %d C\n\r", counter++, get_mcu_temp());
 }
 
+void user_btn_cb(uchar pressed)
+{
+ usb_cdc_printf("user_btn %s\n\r", pressed ? "pressed" : "released");
+}
+
 #include <string.h>
 
 void usb_cdc_send_rx_cb(uint8_t* buf, uint32_t len)
