@@ -3,7 +3,6 @@
 #include "usbd_cdc_interface.h"
 
 #define APP_RX_DATA_SIZE  2048
-#define APP_TX_DATA_SIZE  2048
 
 USBD_CDC_LineCodingTypeDef LineCoding =
   {
@@ -14,7 +13,6 @@ USBD_CDC_LineCodingTypeDef LineCoding =
   };
 
 uint8_t UserRxBuffer[APP_RX_DATA_SIZE];/* Received Data over USB are stored in this buffer */
-uint8_t UserTxBuffer[APP_TX_DATA_SIZE];/* Received Data over UART (CDC interface) are stored in this buffer */
 extern USBD_HandleTypeDef  USBD_Device;
 
 /* Private function prototypes -----------------------------------------------*/
@@ -42,7 +40,7 @@ USBD_CDC_ItfTypeDef USBD_CDC_fops =
 static int8_t CDC_Itf_Init(void)
 {
  /*##-5- Set Application Buffers ############################################*/
- USBD_CDC_SetTxBuffer(&USBD_Device, UserTxBuffer, 0);
+ USBD_CDC_SetTxBuffer(&USBD_Device, 0, 0);
  USBD_CDC_SetRxBuffer(&USBD_Device, NULL);  
  return (USBD_OK);
 }
@@ -128,10 +126,7 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 
 uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len)
 {
- USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*) USBD_Device.pClassData;
- while (hcdc->TxState); // TODO add timeout
- memcpy(UserTxBuffer, buf, len);
- USBD_CDC_SetTxBuffer(&USBD_Device, UserTxBuffer, len);
+ USBD_CDC_SetTxBuffer(&USBD_Device, (uint8_t *)buf, len);
  return USBD_CDC_TransmitPacket(&USBD_Device);
 }
 
@@ -168,8 +163,8 @@ static int8_t CDC_Itf_Receive(uint8_t* buf, uint32_t *len)
     debug("cdc_rx: too big buflen:%d\n", *len);
     return USBD_OK;
   }
-  USBD_CDC_SetRxBuffer(&USBD_Device, UserTxBuffer);
+  USBD_CDC_SetRxBuffer(&USBD_Device, UserRxBuffer);
   USBD_CDC_ReceivePacket(&USBD_Device);
-  usb_cdc_send_rx_cb(UserTxBuffer, *len);
+  usb_cdc_send_rx_cb(UserRxBuffer, *len);
   return (USBD_OK);
 }
