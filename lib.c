@@ -2,6 +2,18 @@
 #include <app.h>
 #include <string.h>
 
+void blink(uchar led)
+{
+ switch (led) {
+   case RED_LED:
+     set_led(RED_LED, 1);
+     status.red_led_blink = 1;
+     break;
+   default:
+     break;
+ }
+}
+
 void beep(u32 t)
 {
  if (!status.buzzer_on) {

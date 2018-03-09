@@ -3,7 +3,7 @@
 
 #include <lib.h>
 
-#define LED_DELAY  		500
+#define LED_DELAY  		300
 
 // Red LED - PA1
 #define RED_LED_PIN         	GPIO_PIN_1
@@ -51,8 +51,9 @@ typedef struct status_t {
   volatile unsigned panic:1;
   volatile unsigned buzzer_on:1;
   volatile unsigned user_btn:1;
-  volatile unsigned short fan[MAX_RPM_SENSORS];
-  volatile unsigned short temp[MAX_TEMP_SENSORS];
+  volatile ushort fan[MAX_RPM_SENSORS];
+  volatile ushort temp[MAX_TEMP_SENSORS];
+  volatile uchar red_led_blink;
   short mcu_temp;
 } status_t;
 
