@@ -36,6 +36,8 @@ static int counter;
 
 void _1_sec_tick()
 {
+ if (!counter)
+   usb_cdc_send_str("\r\nSTMcool booted ok\n\r");
 #ifdef USE_RTT
  uint i = 0;
  for (; i < MAX_RPM_SENSORS; i++) {
@@ -43,8 +45,13 @@ void _1_sec_tick()
    if (fan)
      debug("%d: fan%d:%d\r\n", counter++, i, fan);
  }
- debug("%d: mcu_temp: %d C\n", counter++, get_mcu_temp());
-#endif
+ // debug("%d: mcu_temp: %d C\n", counter++, get_mcu_temp());
+#endif 
+ usb_cdc_printf("%d: mcu_temp: %d C\n\r", counter++, get_mcu_temp());
+}
+
+void usb_cdc_send_rx_cb(uint8_t* buf, uint32_t len)
+{
 }
 
 void _100_ms_tick()

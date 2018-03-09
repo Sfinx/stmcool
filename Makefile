@@ -23,7 +23,7 @@ DDEFS = -DSTM32L433xx -DUSE_HAL_DRIVER
 DADEFS = 
 
 # List all default directories to look for include files here
-DINCDIR =
+DINCDIR = usb-device-lib/Core/Inc usb-device-lib/Class/CDC/Inc
 
 # List the default directory to look for the libraries here
 DLIBDIR =
@@ -43,7 +43,8 @@ UADEFS =
 LIBSDIR      = ./lib
 DRIVERS      = $(LIBSDIR)/drivers
 DRIVERSINC   = $(LIBSDIR)/drivers/Inc
-DRIVERSERC   = $(LIBSDIR)/drivers/Src
+DRIVERSRC    = $(LIBSDIR)/drivers/Src
+USBSRC       = ./usb-device-lib
 CMSISDIR     = $(LIBSDIR)/CMSIS
 CMSISDIRINC  = $(CMSISDIR)/Include
 DEVDIR       = $(CMSISDIR)/Device/ST/STM32L4xx
@@ -57,20 +58,32 @@ LINKER       = $(BOARD)
 
 SRC  = app.c
 SRC += lib.c
+SRC += usbd_cdc_interface.c
+SRC += usbd_conf.c
+SRC += usbd_desc.c
 SRC += handlers.c
+SRC += syscalls.c
 
 SRC += $(STARTUP)/system_stm32l4xx.c
 
-SRC += $(DRIVERSERC)/stm32l4xx_hal.c
-SRC += $(DRIVERSERC)/stm32l4xx_hal_cortex.c
-SRC += $(DRIVERSERC)/stm32l4xx_hal_rcc.c
-SRC += $(DRIVERSERC)/stm32l4xx_hal_pwr.c
-SRC += $(DRIVERSERC)/stm32l4xx_hal_pwr_ex.c
-SRC += $(DRIVERSERC)/stm32l4xx_hal_gpio.c
-SRC += $(DRIVERSERC)/stm32l4xx_hal_tim.c
-SRC += $(DRIVERSERC)/stm32l4xx_hal_adc.c
-SRC += $(DRIVERSERC)/stm32l4xx_hal_adc_ex.c
-SRC += $(DRIVERSERC)/stm32l4xx_hal_tim_ex.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_cortex.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_rcc.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_rcc_ex.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_pwr.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_pwr_ex.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_gpio.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_tim.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_adc.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_adc_ex.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_tim_ex.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_pcd.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_pcd_ex.c
+SRC += $(DRIVERSRC)/stm32l4xx_ll_usb.c
+SRC += $(USBSRC)/Core/Src/usbd_core.c
+SRC += $(USBSRC)/Core/Src/usbd_ctlreq.c
+SRC += $(USBSRC)/Core/Src/usbd_ioreq.c
+SRC += $(USBSRC)/Class/CDC/Src/usbd_cdc.c
 
 #SRC += lib.c
 #SRC += handlers.c

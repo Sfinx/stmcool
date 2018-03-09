@@ -113,4 +113,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t pin)
  }
 }
 
+void USB_IRQHandler(void)
+{
+ HAL_PCD_IRQHandler(&hpcd);
+}
+
 //void PPP_IRQHandler(void)

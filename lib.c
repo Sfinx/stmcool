@@ -62,36 +62,59 @@ void SystemClock_Config(void)
 {
   RCC_ClkInitTypeDef RCC_ClkInitStruct;
   RCC_OscInitTypeDef RCC_OscInitStruct;
+  RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct;
 
-  // MSI is enabled after System reset, activate PLL with MSI as source
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_MSI;
-  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
+  // Enable LSE Oscillator to automatically calibrate the MSI clock
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE;
+  RCC_OscInitStruct.PLL.PLLState   = RCC_PLL_NONE; // No PLL update
+  RCC_OscInitStruct.LSEState       = RCC_LSE_ON; // External 32.768 kHz clock on OSC_IN/OSC_OUT
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) == HAL_OK)
+    RCC->CR |= RCC_CR_MSIPLLEN; // Enable MSI PLL-mode
+
+  HAL_RCCEx_DisableLSECSS();
+
+  // Enable MSI/HSI
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_MSI;
+  RCC_OscInitStruct.MSIState             = RCC_MSI_ON;
+  RCC_OscInitStruct.HSIState             = RCC_HSI_OFF;
   RCC_OscInitStruct.MSICalibrationValue = RCC_MSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_MSI;
-  RCC_OscInitStruct.PLL.PLLM = 1;
-  RCC_OscInitStruct.PLL.PLLN = 40;
-  RCC_OscInitStruct.PLL.PLLR = 2;
-  RCC_OscInitStruct.PLL.PLLP = 7;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
-  if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  RCC_OscInitStruct.MSIClockRange       = RCC_MSIRANGE_11; // 48 MHz
+  RCC_OscInitStruct.PLL.PLLState        = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource       = RCC_PLLSOURCE_MSI;
+  RCC_OscInitStruct.PLL.PLLM            = 6;    // 8 MHz
+  RCC_OscInitStruct.PLL.PLLN            = 40;   // 320 MHz
+  RCC_OscInitStruct.PLL.PLLP            = 7;    // 45 MHz
+  RCC_OscInitStruct.PLL.PLLQ            = 4;    // 80 MHz
+  RCC_OscInitStruct.PLL.PLLR            = 4;    // 80 MHz
+
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
     panic(SYSTEMCLOCK_OOPS);
-  // Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
-  //   clocks dividers
-  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;  
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;  
-  if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+
+  // Enable MSI Auto-calibration through LSE
+  HAL_RCCEx_EnableMSIPLLMode();
+  // Select MSI output as USB clock source
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
+  PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_MSI; // 48 MHz
+  HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+  // Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 clocks dividers
+  RCC_ClkInitStruct.ClockType      = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+  RCC_ClkInitStruct.SYSCLKSource   = RCC_SYSCLKSOURCE_PLLCLK; // 80 MHz
+  RCC_ClkInitStruct.AHBCLKDivider  = RCC_SYSCLK_DIV1;         // 80 MHz
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;           // 80 MHz
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;           // 80 MHz
+
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) // FLASH_LATENCY_4
     panic(SYSTEMCLOCK_OOPS);
+
+  // Enable Power Controller clock
+  __HAL_RCC_PWR_CLK_ENABLE();
+  HAL_PWREx_EnableVddUSB();
 }
 
 #ifdef  USE_FULL_ASSERT
 void assert_failed(char *file, uint32_t line)
 { 
- debug("Assert faild at %s:%d\r\n", file, line);
+ debug("Assert failed at %s:%d\r\n", file, line);
  while (1);
 }
 #endif
@@ -209,6 +232,25 @@ short get_mcu_temp()
  return status.mcu_temp;
 }
 
+#include "usbd_desc.h"
+#include "usbd_cdc_interface.h"
+
+USBD_HandleTypeDef USBD_Device;
+
+void usb_init()
+{
+ // Init Device Library
+ if (USBD_Init(&USBD_Device, &VCP_Desc, 0) != USBD_OK)
+   panic(USB_OOPS);
+ // Register the HID class
+ if (USBD_RegisterClass(&USBD_Device, &USBD_CDC) != USBD_OK)
+   panic(USB_OOPS);
+ if (USBD_CDC_RegisterInterface(&USBD_Device, &USBD_CDC_fops) != USBD_OK)
+   panic(USB_OOPS);
+ if (USBD_Start(&USBD_Device) != USBD_OK)
+   panic(USB_OOPS);
+}
+
 void board_init()
 {
  memset(&status, 0, sizeof(status));
@@ -216,6 +258,7 @@ void board_init()
  SystemClock_Config();
  leds_init();
  buzzer_init();
+ usb_init();
  temp_init();
  fan_sensors_init();
  debug("%sstmcool powered on\n\r%s", RTT_CTRL_TEXT_GREEN, RTT_CTRL_RESET);
