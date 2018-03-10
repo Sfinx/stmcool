@@ -15,7 +15,8 @@
 typedef enum leds_t {
     RED_LED,
     GREEN_LED,
-    BLUE_LED
+    BLUE_LED,
+    MAX_LEDS
 } leds_t;
 
 // buzzer at PB4 (SO)
@@ -53,7 +54,7 @@ typedef struct status_t {
   volatile unsigned user_btn:1;
   volatile ushort fan[MAX_RPM_SENSORS];
   volatile ushort temp[MAX_TEMP_SENSORS];
-  volatile uchar red_led_blink;
+  volatile uchar led_blink[MAX_LEDS];
   short mcu_temp;
 } status_t;
 

@@ -126,7 +126,7 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 
 uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len)
 {
- blink(RED_LED);
+ blink(BLUE_LED);
  USBD_CDC_SetTxBuffer(&USBD_Device, (uint8_t *)buf, len);
  return USBD_CDC_TransmitPacket(&USBD_Device);
 }
@@ -160,7 +160,7 @@ uint8_t usb_cdc_printf(const char *fmt, ...)
 
 static int8_t CDC_Itf_Receive(uint8_t* buf, uint32_t *len)
 {
- blink(RED_LED);
+ blink(BLUE_LED);
  if (*len > APP_RX_DATA_SIZE) {
    debug("cdc_rx: too big buflen:%d\n", *len);
    return USBD_OK;

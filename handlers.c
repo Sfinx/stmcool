@@ -46,12 +46,15 @@ static ushort ms_cnt = 100;
 // happens each 1ms
 void SysTick_Handler(void)
 {
+ uchar i;
  HAL_IncTick();
  if (status.panic)
    return;
- if (status.red_led_blink++ > 50) {
-   status.red_led_blink = 0;
-   set_led(RED_LED, 0);
+ for (i = 0; i < MAX_LEDS; i++) {
+   if (status.led_blink[i] && (status.led_blink[i]++ > 50)) {
+     status.led_blink[i] = 0;
+     set_led(i, 0);
+   }
  }
  if (status.user_btn != HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13)) {
    status.user_btn = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);

@@ -4,14 +4,8 @@
 
 void blink(uchar led)
 {
- switch (led) {
-   case RED_LED:
-     set_led(RED_LED, 1);
-     status.red_led_blink = 1;
-     break;
-   default:
-     break;
- }
+ set_led(led, 1);
+ status.led_blink[led] = 1;
 }
 
 void beep(u32 t)
