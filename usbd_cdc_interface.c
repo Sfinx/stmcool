@@ -41,7 +41,7 @@ static int8_t CDC_Itf_DeInit(void)
  return (USBD_OK);
 }
 
-static char cdc_not_ready = 1;
+static char cdc_ready = 0;
 
 static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 { 
@@ -63,6 +63,10 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
      LineCoding.datatype   = pbuf[6];
      // debug("speed:%d format:%d, parity:%d, datatype:%d\n", LineCoding.bitrate, LineCoding.format,
      //  LineCoding.paritytype, LineCoding.datatype);
+     if (LineCoding.bitrate == 115200) {
+       cdc_ready = 2;
+       usb_cdc_ready();
+     }
      break;
    case CDC_GET_LINE_CODING:
      pbuf[0] = (uint8_t)(LineCoding.bitrate);
@@ -74,8 +78,7 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
      pbuf[6] = LineCoding.datatype;     
      break;
    case CDC_SET_CONTROL_LINE_STATE:
-     cdc_not_ready = 0;
-     usb_cdc_ready();
+     cdc_ready = 1;
      break;
    case CDC_SEND_BREAK:
      break;        
@@ -87,7 +90,7 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 
 uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len)
 {
- if (cdc_not_ready)
+ if (cdc_ready < 2)
    return USBD_BUSY;
  if (len > CDC_TX_DATA_SIZE) {
    debug("cdc_tx: too big packet:%d/%d\n", len, CDC_TX_DATA_SIZE);
@@ -128,7 +131,9 @@ static int8_t CDC_Itf_Receive(uint8_t* buf, uint32_t *len)
    debug("cdc_rx: too big packet:%d/%d\n", *len, CDC_RX_DATA_SIZE);
    return USBD_OK;
  }
- USBD_CDC_ReceivePacket(&USBD_Device);
- usb_cdc_rx_cb(CDCRxBuffer, *len);
+ if (cdc_ready > 1) {
+   USBD_CDC_ReceivePacket(&USBD_Device);
+   usb_cdc_rx_cb(CDCRxBuffer, *len);
+ }
  return (USBD_OK);
 }
