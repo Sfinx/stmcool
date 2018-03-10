@@ -45,6 +45,7 @@ static char cdc_ready = 0;
 
 static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 { 
+ // debug("CDC_Itf_Control: %d\n", cmd);
  switch (cmd) {
    case CDC_SEND_ENCAPSULATED_COMMAND:
      break;
@@ -63,7 +64,7 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
      LineCoding.datatype   = pbuf[6];
      // debug("speed:%d format:%d, parity:%d, datatype:%d\n", LineCoding.bitrate, LineCoding.format,
      //  LineCoding.paritytype, LineCoding.datatype);
-     if (LineCoding.bitrate == 115200) {
+     if (cdc_ready && (LineCoding.bitrate == 115200)) {
        cdc_ready = 2;
        usb_cdc_ready();
      }
@@ -78,7 +79,8 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
      pbuf[6] = LineCoding.datatype;     
      break;
    case CDC_SET_CONTROL_LINE_STATE:
-     cdc_ready = 1;
+     if (!cdc_ready)
+       cdc_ready = 1;
      break;
    case CDC_SEND_BREAK:
      break;        

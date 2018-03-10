@@ -31,7 +31,6 @@ void set_time()
  // set time to 2018-01-01 01:02:03 UTC
  status.time = 1514768523ULL;
  status.seconds = status.milliseconds = 0;
- usb_cdc_printf("%s time set to 2018-01-01 01:02:03 UTC\r\n", mcu_time());
 }
 
 void app()
@@ -41,12 +40,6 @@ void app()
  set_led(GREEN_LED, 0);
  print_info();
  HAL_Delay(LED_DELAY);
- static uchar p;
- if (!p && status.cdc_ok) {
-   // emulate set_time from host
-   set_time();
-   p = 1;
- }
 }
 
 void usb_cdc_ready()
@@ -63,6 +56,7 @@ void main(void)
  beep(BEEP_DELAY);
  HAL_Delay(BEEP_DELAY);
  beep(BEEP_DELAY);
+ set_time();
  while (1) {
    if (!status.panic)
      app();
