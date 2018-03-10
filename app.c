@@ -35,7 +35,7 @@ void _1_sec_tick()
  if (!status.seconds) {
    uint32_t s0 = (get_serial() >> 32);
    uint32_t s1 = (get_serial() & 0xFFFFFFFF);
-   usb_cdc_printf("\r\n%s STMcool [ s/n %08X%08X ] booted ok\n\r", mcu_time(), s0, s1);
+   usb_cdc_printf("\r\n%s STMcool [ s/n %08X%08X ] booted ok\r\n", mcu_time(), s0, s1);
  }
  uint i = 0;
  for (; i < MAX_RPM_SENSORS; i++) {
@@ -43,7 +43,7 @@ void _1_sec_tick()
    if (fan)
      usb_cdc_printf("%s fan%d:%d\r\n", mcu_time(), i, fan);
  }
- usb_cdc_printf("%s mcu_temp: %d C\n\r", mcu_time(), get_mcu_temp());
+ usb_cdc_printf("%s mcu_temp: %d C\r\n", mcu_time(), get_mcu_temp());
 }
 
 void user_btn_cb(uchar pressed)

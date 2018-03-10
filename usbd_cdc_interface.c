@@ -86,9 +86,12 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
  return (USBD_OK);
 }
 
+#define MAX_CDC_TX_SIZE	128
+
 uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len)
 {
- if (cdc_not_ready)
+ static char tx_b[MAX_CDC_TX_SIZE];
+ if (cdc_not_ready || (len > MAX_CDC_TX_SIZE))
    return USBD_BUSY;
  USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*) USBD_Device.pClassData;
  if (hcdc->TxState != 0) {
@@ -96,8 +99,8 @@ uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len)
    return USBD_BUSY;
  }
  blink(BLUE_LED);
- // !!! we use the unknown external (may be temp) buffer here
- USBD_CDC_SetTxBuffer(&USBD_Device, (uint8_t *)buf, len);
+ memcpy(tx_b, buf, len);
+ USBD_CDC_SetTxBuffer(&USBD_Device, (uint8_t *)tx_b, len);
  return USBD_CDC_TransmitPacket(&USBD_Device);
 }
 

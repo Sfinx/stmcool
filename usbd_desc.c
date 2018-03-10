@@ -3,8 +3,6 @@
 #include "usbd_desc.h"
 #include "usbd_conf.h"
 
-/* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
 #define USBD_VID                      0x0483
 #define USBD_PID                      0x5740
 #define USBD_LANGID_STRING            0x409
@@ -13,8 +11,6 @@
 #define USBD_CONFIGURATION_FS_STRING  "VCP Config"
 #define USBD_INTERFACE_FS_STRING      "VCP Interface"
 
-/* Private macro -------------------------------------------------------------*/
-/* Private function prototypes -----------------------------------------------*/
 uint8_t *USBD_VCP_DeviceDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
 uint8_t *USBD_VCP_LangIDStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length);
 uint8_t *USBD_VCP_ManufacturerStrDescriptor (USBD_SpeedTypeDef speed, uint16_t *length);
@@ -26,7 +22,6 @@ uint8_t *USBD_VCP_InterfaceStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *leng
 uint8_t *USBD_VCP_USRStringDesc (USBD_SpeedTypeDef speed, uint8_t idx, uint16_t *length);  
 #endif /* USB_SUPPORT_USER_STRING_DESC */  
 
-/* Private variables ---------------------------------------------------------*/
 USBD_DescriptorsTypeDef VCP_Desc = {
   USBD_VCP_DeviceDescriptor,
   USBD_VCP_LangIDStrDescriptor, 
@@ -76,7 +71,6 @@ uint8_t USBD_StringSerial[USB_SIZ_STRING_SERIAL] =
 
 uint8_t USBD_StrDesc[USBD_MAX_STR_DESC_SIZ];
 
-/* Private functions ---------------------------------------------------------*/
 static void IntToUnicode (uint32_t value , uint8_t *pbuf , uint8_t len);
 static void Get_SerialNum(void);
 
@@ -208,5 +202,3 @@ static void IntToUnicode (uint32_t value , uint8_t *pbuf , uint8_t len)
     pbuf[ 2* idx + 1] = 0;
   }
 }
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
