@@ -4,19 +4,19 @@
 using namespace std;
 using namespace ost;
 
-static Serial *top;
+static Serial *stmcool;
 
 string read_string()
 {
  string r;
  while (1) {
-   if (top->isPending(Serial::pendingInput, 10)) {
+   if (stmcool->isPending(Serial::pendingInput, 10)) {
      char b = 0;
-     int res = top->aRead(&b, 1);
+     int res = stmcool->aRead(&b, 1);
      if (res == 1)
        r += b;
      else
-       throw top;
+       throw stmcool;
      if (b == '\n')
        break;
    }
@@ -26,15 +26,15 @@ string read_string()
 
 void app()
 {
- if (top)
-   delete top;
- top = 0;
- top = new Serial("/dev/ttyACM0");
- top->setSpeed(115200);
- top->setCharBits(8);
- top->setParity(Serial::parityNone);
- top->setStopBits(1);
- top->setFlowControl(Serial::flowNone);
+ if (stmcool)
+   delete stmcool;
+ stmcool = 0;
+ stmcool = new Serial("/dev/ttyACM0");
+ stmcool->setSpeed(115200);
+ stmcool->setCharBits(8);
+ stmcool->setParity(Serial::parityNone);
+ stmcool->setStopBits(1);
+ stmcool->setFlowControl(Serial::flowNone);
  while(1) {
    string r = read_string();
    if (r.size())
@@ -49,9 +49,9 @@ int main()
      app();
    } catch (Serial *e) {
       uint err = e->getErrorNumber();
-      cout << "serial error: " << err << endl;
+      cout << "stmcool serial port error: " << err << endl;
       if (err != 2)
-        top->flushInput();
+        stmcool->flushInput();
       else
         sleep(1);
    } 

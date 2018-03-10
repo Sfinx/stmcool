@@ -53,3 +53,6 @@ extern void user_btn_cb(uchar pressed);
 extern void blink(uchar led);
 extern const char *mcu_time(void);
 extern uint64_t get_serial(void);
+
+#define CDC_RX_DATA_SIZE	256
+#define CDC_TX_DATA_SIZE	256

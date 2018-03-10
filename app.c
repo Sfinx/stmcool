@@ -53,13 +53,11 @@ void user_btn_cb(uchar pressed)
 
 #include <string.h>
 
-void usb_cdc_rx_cb(uint8_t* buf, uint32_t len)
+void usb_cdc_rx_cb(uint8_t* b, uint32_t len)
 {
- char b[128] = { 0 };
- if (len < 128) {
-  memcpy(b, buf, len);
-  debug("usb_cdc_rx_cb: %d [%s]\n", len, b);
- }
+ // ugly: add 0 byte
+ b[len] = 0;
+ debug("usb_cdc_rx_cb: %d [%s]\n", len, b);
 }
 
 void _100_ms_tick()

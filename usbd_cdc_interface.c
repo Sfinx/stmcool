@@ -13,9 +13,7 @@ USBD_CDC_LineCodingTypeDef LineCoding =
     0x08    /* nb. of bits 8*/
   };
 
-#define CDC_RX_DATA_SIZE  2048
-
-uint8_t UserRxBuffer[CDC_RX_DATA_SIZE];
+uint8_t CDCRxBuffer[CDC_RX_DATA_SIZE];
 extern USBD_HandleTypeDef  USBD_Device;
 
 static int8_t CDC_Itf_Init     (void);
@@ -34,7 +32,7 @@ USBD_CDC_ItfTypeDef USBD_CDC_fops =
 static int8_t CDC_Itf_Init(void)
 {
  USBD_CDC_SetTxBuffer(&USBD_Device, 0, 0);
- USBD_CDC_SetRxBuffer(&USBD_Device, 0);
+ USBD_CDC_SetRxBuffer(&USBD_Device, CDCRxBuffer);
  return (USBD_OK);
 }
 
@@ -86,12 +84,9 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
  return (USBD_OK);
 }
 
-#define MAX_CDC_TX_SIZE	128
-
 uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len)
 {
- static char tx_b[MAX_CDC_TX_SIZE];
- if (cdc_not_ready || (len > MAX_CDC_TX_SIZE))
+ if (cdc_not_ready || (len > CDC_TX_DATA_SIZE))
    return USBD_BUSY;
  USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*) USBD_Device.pClassData;
  if (hcdc->TxState != 0) {
@@ -99,6 +94,7 @@ uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len)
    return USBD_BUSY;
  }
  blink(BLUE_LED);
+ static char tx_b[CDC_TX_DATA_SIZE];
  memcpy(tx_b, buf, len);
  USBD_CDC_SetTxBuffer(&USBD_Device, (uint8_t *)tx_b, len);
  return USBD_CDC_TransmitPacket(&USBD_Device);
@@ -111,7 +107,7 @@ uint8_t usb_cdc_send_str(const char *s)
 
 uint8_t usb_cdc_printf(const char *fmt, ...)
 {
- char b[128] = { 0 };
+ char b[CDC_TX_DATA_SIZE + 1] = { 0 };
  va_list ap;
  va_start(ap, fmt);
  vsnprintf(b, sizeof(b), fmt, ap);
@@ -127,8 +123,7 @@ static int8_t CDC_Itf_Receive(uint8_t* buf, uint32_t *len)
    debug("cdc_rx: too big packet:%d\n", *len);
    return USBD_OK;
  }
- USBD_CDC_SetRxBuffer(&USBD_Device, UserRxBuffer);
  USBD_CDC_ReceivePacket(&USBD_Device);
- usb_cdc_rx_cb(UserRxBuffer, *len);
+ usb_cdc_rx_cb(CDCRxBuffer, *len);
  return (USBD_OK);
 }
