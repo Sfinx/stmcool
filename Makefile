@@ -11,7 +11,7 @@ AS   = $(TRGT)gcc -x assembler-with-cpp
 HEX  = $(CP) -O ihex 
 BIN  = $(CP) -O binary
 
-MCU  = cortex-m3
+MCU  = cortex-m4
 RUN_FROM_FLASH = 1
 USE_RTT = 1
 
