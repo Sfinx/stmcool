@@ -45,6 +45,7 @@ extern short get_mcu_temp();
 
 #include "usbd_conf.h"
 
+extern void usb_cdc_ready(void);
 extern uint8_t usb_cdc_send_str(const char *s);
 extern uint8_t usb_cdc_printf(const char *fmt, ...);
 extern uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len);
@@ -53,6 +54,5 @@ extern void user_btn_cb(uchar pressed);
 extern void blink(uchar led);
 extern const char *mcu_time(void);
 extern uint64_t get_serial(void);
-
 #define CDC_RX_DATA_SIZE	256
 #define CDC_TX_DATA_SIZE	256

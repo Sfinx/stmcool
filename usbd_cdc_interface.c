@@ -75,6 +75,7 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
      break;
    case CDC_SET_CONTROL_LINE_STATE:
      cdc_not_ready = 0;
+     usb_cdc_ready();
      break;
    case CDC_SEND_BREAK:
      break;        

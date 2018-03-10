@@ -1,26 +1,6 @@
 
 #include "app.h"
 
-void app()
-{
- set_led(GREEN_LED, 1);
- HAL_Delay(LED_DELAY);
- set_led(GREEN_LED, 0);
- HAL_Delay(LED_DELAY);
-}
-
-void main(void)
-{
- board_init();
- beep(BEEP_DELAY);
- HAL_Delay(BEEP_DELAY);
- beep(BEEP_DELAY);
- while (1) {
-   if (!status.panic)
-     app();
- }
-}
-
 u32 get_fan(u8 fan)
 {
  if (fan > MAX_RPM_SENSORS)
@@ -30,13 +10,8 @@ u32 get_fan(u8 fan)
  return f;
 }
 
-void _1_sec_tick()
+void print_info()
 {
- if (!status.seconds) {
-   uint32_t s0 = (get_serial() >> 32);
-   uint32_t s1 = (get_serial() & 0xFFFFFFFF);
-   usb_cdc_printf("\r\n%s STMcool [ s/n %08X%08X ] booted ok\r\n", mcu_time(), s0, s1);
- }
  uint i = 0;
  for (; i < MAX_RPM_SENSORS; i++) {
    u32 fan = get_fan(i);
@@ -51,6 +26,34 @@ void user_btn_cb(uchar pressed)
  usb_cdc_printf("%s user_btn %s\n\r", mcu_time(), pressed ? "pressed" : "released");
 }
 
+void app()
+{
+ set_led(GREEN_LED, 1);
+ HAL_Delay(LED_DELAY);
+ set_led(GREEN_LED, 0);
+ HAL_Delay(LED_DELAY);
+ print_info();
+}
+
+void usb_cdc_ready()
+{
+ uint32_t s0 = (get_serial() >> 32);
+ uint32_t s1 = (get_serial() & 0xFFFFFFFF);
+ usb_cdc_printf("\r\n%s STMcool [ s/n %08X%08X ] booted ok\r\n", mcu_time(), s0, s1);
+}
+
+void main(void)
+{
+ board_init();
+ beep(BEEP_DELAY);
+ HAL_Delay(BEEP_DELAY);
+ beep(BEEP_DELAY);
+ while (1) {
+   if (!status.panic)
+     app();
+ }
+}
+
 #include <string.h>
 
 void usb_cdc_rx_cb(uint8_t* b, uint32_t len)
@@ -60,6 +63,12 @@ void usb_cdc_rx_cb(uint8_t* b, uint32_t len)
  debug("usb_cdc_rx_cb: %d [%s]\n", len, b);
 }
 
+// called from systick interrupt
+void _1_sec_tick()
+{
+}
+
+// called from systick interrupt
 void _100_ms_tick()
 {
 }
