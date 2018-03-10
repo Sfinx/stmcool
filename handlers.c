@@ -60,12 +60,15 @@ void SysTick_Handler(void)
    status.user_btn = HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_13);
    user_btn_cb(status.user_btn);
  }
+ status.milliseconds++;
  // HAL_SYSTICK_IRQHandler();
  if (!(ms_cnt++ % 100))
    _100_ms_tick();   
  if (ms_cnt == 1000) {
    ms_cnt = 0;
    _1_sec_tick();
+   status.seconds++;
+   status.milliseconds = 0;
  }
 }
 

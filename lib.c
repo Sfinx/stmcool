@@ -109,7 +109,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;           // 80 MHz
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;           // 80 MHz
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) // FLASH_LATENCY_4
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK) // FLASH_LATENCY_4
     panic(SYSTEMCLOCK_OOPS);
 
   // Enable Power Controller clock
@@ -306,4 +306,15 @@ void panic(int i)
      count = 0;
    }
  }
+}
+
+const char *mcu_time(void)
+{
+ static char b[32];
+ uchar days = (status.seconds / 86400);
+ uchar hours = (status.seconds / 3600) % 24;
+ uchar minutes = (status.seconds / 60) % 60;
+ uchar seconds = status.seconds % 60;
+ sprintf(b, "[%03d:%02d:%02d:%02d.%03d]", days, hours, minutes, seconds, status.milliseconds);
+ return b;
 }

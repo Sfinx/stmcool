@@ -157,8 +157,13 @@ CPFLAGS += -MD -MP -MF .dep/$(@F).d
 # makefile rules
 #
 
-all: $(OBJS) $(PROJECT).elf $(PROJECT).bin
-	$(TRGT)size $(PROJECT).elf
+all:	tty stmcool
+
+stmcool: $(OBJS) $(PROJECT).elf $(PROJECT).bin
+	@$(TRGT)size $(PROJECT).elf
+
+tty: tty.cpp
+	$(CXX) -O2 -Wall tty.cpp -o tty -lcommoncpp -lucommon
 
 %.o : %.c
 	$(CC) -c $(CPFLAGS) -I . $(INCDIR) $< -o $@
@@ -177,7 +182,7 @@ all: $(OBJS) $(PROJECT).elf $(PROJECT).bin
 
 clean:
 	@rm -f $(OBJS)
-	@rm -f *.elf *.map *.hex JLink.log
+	@rm -f *.elf *.map *.hex JLink.log tty
 	@rm -f $(SRC:.c=.c.bak)
 	@rm -f $(SRC:.c=.lst)
 	@rm -f $(ASRC:.s=.s.bak)
@@ -206,5 +211,8 @@ view:
 
 push:
 	@git push origin
+
+revback:
+	@git reset --soft HEAD^
 
 -include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)

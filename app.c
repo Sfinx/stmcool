@@ -30,24 +30,22 @@ u32 get_fan(u8 fan)
  return f;
 }
 
-static int counter;
-
 void _1_sec_tick()
 {
- if (!counter)
-   usb_cdc_send_str("\r\nSTMcool booted ok\n\r");
+ if (!status.seconds)
+   usb_cdc_printf("\r\n%s STMcool booted ok\n\r", mcu_time());
  uint i = 0;
  for (; i < MAX_RPM_SENSORS; i++) {
    u32 fan = get_fan(i);
    if (fan)
-     usb_cdc_printf("%d: fan%d:%d\r\n", counter++, i, fan);
+     usb_cdc_printf("%s fan%d:%d\r\n", mcu_time(), i, fan);
  }
- usb_cdc_printf("%d: mcu_temp: %d C\n\r", counter++, get_mcu_temp());
+ usb_cdc_printf("%s mcu_temp: %d C\n\r", mcu_time(), get_mcu_temp());
 }
 
 void user_btn_cb(uchar pressed)
 {
- usb_cdc_printf("user_btn %s\n\r", pressed ? "pressed" : "released");
+ usb_cdc_printf("%s user_btn %s\n\r", mcu_time(), pressed ? "pressed" : "released");
 }
 
 #include <string.h>
