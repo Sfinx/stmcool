@@ -190,7 +190,7 @@ todo:
 	@echo
 
 dfu:	all
-	@dfu-util --alt 0 -s 0x08000000 -D $(PROJECT).bin
+	@dfu-util --alt 0 -s 0x08000000:force:mass-erase:leave -D $(PROJECT).bin
 
 stlink:	all
 	@st-flash write $(PROJECT).bin 0x08000000
