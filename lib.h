@@ -52,3 +52,4 @@ extern void usb_cdc_send_rx_cb(uint8_t* buf, uint32_t len);
 extern void user_btn_cb(uchar pressed);
 extern void blink(uchar led);
 extern const char *mcu_time(void);
+extern uint64_t get_serial(void);

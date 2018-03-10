@@ -318,3 +318,8 @@ const char *mcu_time(void)
  sprintf(b, "[%03d:%02d:%02d:%02d.%03d]", days, hours, minutes, seconds, status.milliseconds);
  return b;
 }
+
+uint64_t get_serial()
+{
+ return 0x1ULL;
+}

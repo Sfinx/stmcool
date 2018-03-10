@@ -32,8 +32,11 @@ u32 get_fan(u8 fan)
 
 void _1_sec_tick()
 {
- if (!status.seconds)
-   usb_cdc_printf("\r\n%s STMcool booted ok\n\r", mcu_time());
+ if (!status.seconds) {
+   uint32_t s0 = (get_serial() >> 32);
+   uint32_t s1 = (get_serial() & 0xFFFFFFFF);
+   usb_cdc_printf("\r\n%s STMcool [ s/n %08X%08X ] booted ok\n\r", mcu_time(), s0, s1);
+ }
  uint i = 0;
  for (; i < MAX_RPM_SENSORS; i++) {
    u32 fan = get_fan(i);

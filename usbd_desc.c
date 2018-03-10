@@ -79,6 +79,7 @@ uint8_t USBD_StrDesc[USBD_MAX_STR_DESC_SIZ];
 /* Private functions ---------------------------------------------------------*/
 static void IntToUnicode (uint32_t value , uint8_t *pbuf , uint8_t len);
 static void Get_SerialNum(void);
+
 /**
   * @brief  Returns the device descriptor. 
   * @param  speed: Current device speed
@@ -167,6 +168,8 @@ uint8_t *USBD_VCP_InterfaceStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *leng
   return USBD_StrDesc;  
 }
 
+extern uint64_t get_serial();
+
 /**
   * @brief  Create the serial number string descriptor 
   * @param  None 
@@ -174,19 +177,8 @@ uint8_t *USBD_VCP_InterfaceStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *leng
   */
 static void Get_SerialNum(void)
 {
-  uint32_t deviceserial0, deviceserial1, deviceserial2;
-  
-  deviceserial0 = *(uint32_t*)DEVICE_ID1;
-  deviceserial1 = *(uint32_t*)DEVICE_ID2;
-  deviceserial2 = *(uint32_t*)DEVICE_ID3;
-  
-  deviceserial0 += deviceserial2;
-  
-  if (deviceserial0 != 0)
-  {
-    IntToUnicode (deviceserial0, &USBD_StringSerial[2] ,8);
-    IntToUnicode (deviceserial1, &USBD_StringSerial[18] ,4);
-  }
+  IntToUnicode (get_serial() >> 32, &USBD_StringSerial[2] ,8);
+  IntToUnicode (get_serial(), &USBD_StringSerial[18] ,8);
 }
 
 /**
