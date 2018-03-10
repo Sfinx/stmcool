@@ -39,8 +39,8 @@ void app()
  set_led(GREEN_LED, 1);
  HAL_Delay(LED_DELAY);
  set_led(GREEN_LED, 0);
- HAL_Delay(LED_DELAY);
  print_info();
+ HAL_Delay(LED_DELAY);
  static uchar p;
  if (!p && status.cdc_ok) {
    // emulate set_time from host

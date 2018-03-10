@@ -48,7 +48,7 @@ extern u8 pin2fan(u32 pin);
 typedef struct status_t {
   volatile u32 _1ms_tick;
   volatile unsigned long long seconds;
-  volatile uchar milliseconds;
+  volatile unsigned milliseconds:10;
   volatile u32 buzzer_timer;
   volatile unsigned panic:1;
   volatile unsigned buzzer_on:1;
