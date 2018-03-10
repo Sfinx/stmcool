@@ -38,7 +38,14 @@ _estack = 0x2000C000;    /* end of RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
-/* Specify the memory areas */
+/*
+ * Specify the MCU memory areas:
+ *
+ *   SRAM1: 0x20000000 - 0x2000C000 (48K)
+ *   SRAM2: 0x10000000 - 0x10004000 (16K)
+ *
+ */
+
 MEMORY
 {
  RAM  (xrw)      : ORIGIN = 0x20000000, LENGTH = 48K
@@ -140,6 +147,24 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
   } >RAM AT> FLASH
 
+ _sisram2 = LOADADDR(.sram2);
+
+  /* CCM-RAM section
+  *
+  * IMPORTANT NOTE!
+  * If initialized variables will be placed in this section,
+  * the startup code needs to be modified to copy the init-values.  
+  */
+  .sram2 :
+  {
+    . = ALIGN(8);
+    _ssram2 = .;       /* create a global symbol at sram2 start */
+    *(.sram2)
+    *(.sram2*)
+
+    . = ALIGN(8);
+    _esram2 = .;       /* create a global symbol at sram2 end */
+  } >SRAM2 AT> FLASH
   
   /* Uninitialized data section */
   . = ALIGN(4);

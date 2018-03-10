@@ -41,7 +41,7 @@ void _1_sec_tick()
  for (; i < MAX_RPM_SENSORS; i++) {
    u32 fan = get_fan(i);
    if (fan)
-     usb_cdc_printf("%s fan%d:%d\r\n", mcu_time(), i, fan);
+     usb_cdc_printf("%s fan%d:%d rpm\r\n", mcu_time(), i, fan);
  }
  usb_cdc_printf("%s mcu_temp: %d C\r\n", mcu_time(), get_mcu_temp());
 }
