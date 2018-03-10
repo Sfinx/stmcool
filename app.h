@@ -56,7 +56,9 @@ typedef struct status_t {
   volatile ushort fan[MAX_RPM_SENSORS];
   volatile ushort temp[MAX_TEMP_SENSORS];
   volatile uchar led_blink[MAX_LEDS];
+  volatile time_t time;
   short mcu_temp;
+  volatile unsigned cdc_ok:1;
 } status_t;
 
 extern status_t status;

@@ -26,6 +26,14 @@ void user_btn_cb(uchar pressed)
  usb_cdc_printf("%s user_btn %s\n\r", mcu_time(), pressed ? "pressed" : "released");
 }
 
+void set_time()
+{
+ // set time to 2018-01-01 01:02:03 UTC
+ status.time = 1514768523ULL;
+ status.seconds = status.milliseconds = 0;
+ usb_cdc_printf("%s time set to 2018-01-01 01:02:03 UTC\r\n", mcu_time());
+}
+
 void app()
 {
  set_led(GREEN_LED, 1);
@@ -33,6 +41,12 @@ void app()
  set_led(GREEN_LED, 0);
  HAL_Delay(LED_DELAY);
  print_info();
+ static uchar p;
+ if (!p && status.cdc_ok) {
+   // emulate set_time from host
+   set_time();
+   p = 1;
+ }
 }
 
 void usb_cdc_ready()
@@ -40,6 +54,7 @@ void usb_cdc_ready()
  uint32_t s0 = (get_serial() >> 32);
  uint32_t s1 = (get_serial() & 0xFFFFFFFF);
  usb_cdc_printf("\r\n%s STMcool [ s/n %08X%08X ] booted ok\r\n", mcu_time(), s0, s1);
+ status.cdc_ok = 1;
 }
 
 void main(void)

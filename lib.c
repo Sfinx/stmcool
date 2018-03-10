@@ -308,14 +308,97 @@ void panic(int i)
  }
 }
 
+// stolen from glibc
+
+struct tm {
+ int tm_sec;    /* Seconds (0-60) */
+ int tm_min;    /* Minutes (0-59) */
+ int tm_hour;   /* Hours (0-23) */
+ int tm_mday;   /* Day of the month (1-31) */
+ int tm_mon;    /* Month (0-11) */
+ int tm_year;   /* Year - 1900 */
+ int tm_wday;   /* Day of the week (0-6, Sunday = 0) */
+ int tm_yday;   /* Day in the year (0-365, 1 Jan = 0) */
+ int tm_isdst;  /* Daylight saving time */
+};
+
+#define SECS_PER_HOUR   (60 * 60)
+#define SECS_PER_DAY    (SECS_PER_HOUR * 24)
+# define __isleap(year) \
+  ((year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0))
+
+const unsigned short int __mon_yday[2][13] =
+  {
+    /* Normal years.  */
+    { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
+    /* Leap years.  */
+    { 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
+  };
+
+struct tm *gmtime(time_t epoch)
+{
+ static struct tm tb;
+ struct tm *tp = &tb;
+ long int offset = 0; // seconds east of UTC
+ time_t days, rem, y;
+ const unsigned short int *ip;
+
+ days = epoch / SECS_PER_DAY;
+ rem = epoch % SECS_PER_DAY;
+ rem += offset;
+ while (rem < 0) {
+   rem += SECS_PER_DAY;
+   --days;
+ }
+ while (rem >= SECS_PER_DAY) {
+   rem -= SECS_PER_DAY;
+   ++days;
+ }
+ tp->tm_hour = rem / SECS_PER_HOUR;
+ rem %= SECS_PER_HOUR;
+ tp->tm_min = rem / 60;
+ tp->tm_sec = rem % 60;
+ /* January 1, 1970 was a Thursday.  */
+ tp->tm_wday = (4 + days) % 7;
+ if (tp->tm_wday < 0)
+   tp->tm_wday += 7;
+ y = 1970;
+
+#define DIV(a, b) ((a) / (b) - ((a) % (b) < 0))
+#define LEAPS_THRU_END_OF(y) (DIV (y, 4) - DIV (y, 100) + DIV (y, 400))
+
+ while (days < 0 || days >= (__isleap (y) ? 366 : 365)) {
+   /* Guess a corrected year, assuming 365 days per year.  */
+   time_t yg = y + days / 365 - (days % 365 < 0);
+   /* Adjust DAYS and Y to match the guessed year.  */
+   days -= ((yg - y) * 365 + LEAPS_THRU_END_OF (yg - 1) - LEAPS_THRU_END_OF (y - 1));
+   y = yg;
+ }
+ tp->tm_year = y; // - 1900;
+ tp->tm_yday = days;
+ ip = __mon_yday[__isleap(y)];
+ for (y = 11; days < (long int) ip[y]; --y)
+   continue;
+ days -= ip[y];
+ tp->tm_mon = y + 1;
+ tp->tm_mday = days + 1;
+ return tp;
+}
+
 const char *mcu_time(void)
 {
  static char b[32];
- uchar days = (status.seconds / 86400);
- uchar hours = (status.seconds / 3600) % 24;
- uchar minutes = (status.seconds / 60) % 60;
- uchar seconds = status.seconds % 60;
- sprintf(b, "[%03d:%02d:%02d:%02d.%03d]", days, hours, minutes, seconds, status.milliseconds);
+ if (status.time) {
+   struct tm *t = gmtime(status.seconds + status.time);
+   sprintf(b, "[%04d-%02d-%02d %02d:%02d:%02d.%03d]", t->tm_year, t->tm_mon, t->tm_mday, t->tm_hour,
+     t->tm_min, t->tm_sec, status.milliseconds);
+ } else {
+     uchar days = (status.seconds / 86400);
+     uchar hours = (status.seconds / 3600) % 24;
+     uchar minutes = (status.seconds / 60) % 60;
+     uchar seconds = status.seconds % 60;
+     sprintf(b, "[%04d:%02d:%02d:%02d.%03d]", days, hours, minutes, seconds, status.milliseconds);
+ }
  return b;
 }
 
