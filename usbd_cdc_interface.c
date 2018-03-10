@@ -2,8 +2,6 @@
 #include "app.h"
 #include "usbd_cdc_interface.h"
 
-#define APP_RX_DATA_SIZE  2048
-
 USBD_CDC_LineCodingTypeDef LineCoding =
   {
     115200, /* baud rate*/
@@ -11,6 +9,8 @@ USBD_CDC_LineCodingTypeDef LineCoding =
     0x00,   /* parity - none*/
     0x08    /* nb. of bits 8*/
   };
+
+#define APP_RX_DATA_SIZE  2048
 
 uint8_t UserRxBuffer[APP_RX_DATA_SIZE];/* Received Data over USB are stored in this buffer */
 extern USBD_HandleTypeDef  USBD_Device;
@@ -39,9 +39,8 @@ USBD_CDC_ItfTypeDef USBD_CDC_fops =
   */
 static int8_t CDC_Itf_Init(void)
 {
- /*##-5- Set Application Buffers ############################################*/
  USBD_CDC_SetTxBuffer(&USBD_Device, 0, 0);
- USBD_CDC_SetRxBuffer(&USBD_Device, NULL);  
+ USBD_CDC_SetRxBuffer(&USBD_Device, 0);
  return (USBD_OK);
 }
 
@@ -64,6 +63,8 @@ static int8_t CDC_Itf_DeInit(void)
   * @param  Len: Number of data to be sent (in bytes)
   * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
   */
+static char cdc_not_ready = 1;
+
 static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 { 
   switch (cmd)
@@ -89,7 +90,7 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
     break;
 
   case CDC_SET_LINE_CODING:
-    LineCoding.bitrate    = (uint32_t)(pbuf[0] | (pbuf[1] << 8) | (pbuf[2] << 16) | (pbuf[3] << 24));
+    LineCoding.bitrate = (uint32_t)(pbuf[0] | (pbuf[1] << 8) | (pbuf[2] << 16) | (pbuf[3] << 24));
     LineCoding.format     = pbuf[4];
     LineCoding.paritytype = pbuf[5];
     LineCoding.datatype   = pbuf[6];
@@ -108,6 +109,7 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
     break;
 
   case CDC_SET_CONTROL_LINE_STATE:
+    cdc_not_ready = 0;
     /* Add your code here */
     break;
 
@@ -118,15 +120,23 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
   default:
     break;
   }
-  
   return (USBD_OK);
 }
 
 #include <string.h>
+#include <stdlib.h>
 
 uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len)
 {
+ if (cdc_not_ready)
+   return USBD_BUSY;
+ USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*) USBD_Device.pClassData;
+ if (hcdc->TxState != 0) {
+   blink(RED_LED);
+   return USBD_BUSY;
+ }
  blink(BLUE_LED);
+ // !!! we use the unknown external (may be temp) buffer here
  USBD_CDC_SetTxBuffer(&USBD_Device, (uint8_t *)buf, len);
  return USBD_CDC_TransmitPacket(&USBD_Device);
 }
@@ -167,6 +177,6 @@ static int8_t CDC_Itf_Receive(uint8_t* buf, uint32_t *len)
  }
  USBD_CDC_SetRxBuffer(&USBD_Device, UserRxBuffer);
  USBD_CDC_ReceivePacket(&USBD_Device);
- usb_cdc_send_rx_cb(UserRxBuffer, *len);
+ usb_cdc_rx_cb(UserRxBuffer, *len);
  return (USBD_OK);
 }

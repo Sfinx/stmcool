@@ -119,7 +119,7 @@ void SystemClock_Config(void)
 
 #ifdef  USE_FULL_ASSERT
 void assert_failed(char *file, uint32_t line)
-{ 
+{
  debug("Assert failed at %s:%d\r\n", file, line);
  while (1);
 }

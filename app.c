@@ -24,7 +24,7 @@ void main(void)
 u32 get_fan(u8 fan)
 {
  if (fan > MAX_RPM_SENSORS)
-   debug("shit\n");
+   panic(FAN_OOPS);
  u32 f = (status.fan[fan]*60)/2;
  status.fan[fan] = 0;
  return f;
@@ -53,12 +53,12 @@ void user_btn_cb(uchar pressed)
 
 #include <string.h>
 
-void usb_cdc_send_rx_cb(uint8_t* buf, uint32_t len)
+void usb_cdc_rx_cb(uint8_t* buf, uint32_t len)
 {
  char b[128] = { 0 };
  if (len < 128) {
   memcpy(b, buf, len);
-  debug("usb_cdc_send_rx_cb: %s\n", b);
+  debug("usb_cdc_rx_cb: %d [%s]\n", len, b);
  }
 }
 
