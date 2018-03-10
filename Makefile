@@ -189,7 +189,7 @@ todo:
 	@cat TODO
 	@echo
 
-dfu:	all
+dfu:
 	@dfu-util --alt 0 -s 0x08000000:force:mass-erase:leave -D $(PROJECT).bin
 
 stlink:	all
