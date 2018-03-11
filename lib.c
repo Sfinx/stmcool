@@ -269,6 +269,31 @@ void usb_init()
    panic(USB_OOPS);
 }
 
+static IWDG_HandleTypeDef IwdgHandle;
+
+void wdt_reset()
+{
+ HAL_IWDG_Refresh(&IwdgHandle);
+}
+
+void wdt_init()
+{
+ if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST) != RESET)
+   debug("WDT reset occured\r\n");
+ __HAL_RCC_CLEAR_RESET_FLAGS();
+ /* Set counter reload value to obtain 1 sec. IWDG TimeOut.
+     IWDG counter clock Frequency = uwLsiFreq
+     Set Prescaler to 32 (IWDG_PRESCALER_32)
+     Timeout Period = (Reload Counter Value * 32) / uwLsiFreq
+     So Set Reload Counter Value = (1 * uwLsiFreq) / 32 */
+ IwdgHandle.Instance = IWDG;
+ IwdgHandle.Init.Prescaler = IWDG_PRESCALER_32;
+ IwdgHandle.Init.Reload = (32000 / 32) * 3; // LSI freq is 32kHz, *3 means 3 seconds
+ IwdgHandle.Init.Window = IWDG_WINDOW_DISABLE;
+ if (HAL_IWDG_Init(&IwdgHandle) != HAL_OK)
+  panic(WDT_OOPS);
+}
+
 void board_init()
 {
  memset(&status, 0, sizeof(status));
@@ -280,7 +305,8 @@ void board_init()
  usb_init();
  temp_init();
  fan_sensors_init();
- debug("%sstmcool powered on\n\r%s", RTT_CTRL_TEXT_GREEN, RTT_CTRL_RESET);
+ wdt_init();
+ debug("%sstmcool powered on\r\n%s", RTT_CTRL_TEXT_GREEN, RTT_CTRL_RESET);
 }
 
 void leds_off()
@@ -290,17 +316,34 @@ void leds_off()
  set_led(BLUE_LED, 0);
 }
 
+#define CYCLES_PER_LOOP		3
+
+inline void wait_cycles(uint32_t n)
+{
+ uint32_t l = n/CYCLES_PER_LOOP;
+ asm volatile("0:" "SUBS %[count], 1;" "BNE 0b;" :[count]"+r"(l));
+}
+
+void hard_delay(uint32_t d)
+{
+ wait_cycles(d);
+}
+
 void panic(int i)
 {
  status.panic = 1;
  leds_off();
  debug("%sOops [%d] !\r\n%s", RTT_CTRL_BG_BRIGHT_RED, i, RTT_CTRL_RESET);
  while(1) {
-   static char count;
+   static char count, wc;
+   if (wc < 10) {
+     wc++;
+     wdt_reset();
+   }
    set_led(RED_LED, 1);
-   HAL_Delay(PANIC_DELAY);
+   hard_delay(0xFFFFFF);
    set_led(RED_LED, 0);
-   HAL_Delay(PANIC_DELAY);
+   hard_delay(0xFFFFFF);
    if (++count > 2) {
      beep(BEEP_DELAY * 2);
      count = 0;

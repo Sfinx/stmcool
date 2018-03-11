@@ -30,6 +30,8 @@ void help()
 {
  send_tty_str("\r\n\nstmcool help:\r\n");
  send_tty_str("\t?/h\t- help\r\n");
+ send_tty_str("\tr\t- reset by app hang\r\n");
+ send_tty_str("\tR\t- reset by app crash\r\n");
  send_tty_str("\ti\t- info\r\n");
 }
 
@@ -45,8 +47,12 @@ void info()
 void exec_cmd()
 {
  const char *cmd = status.cmd;
- debug("new cmd [%s]\n", cmd);
  switch(cmd[0]) {
+   case 'R':
+     *(__IO uint32_t *) 0x00040001 = 0xFF;
+     break;
+   case 'r':
+     while(1);
    case 'h':
    case '?':
      help();
@@ -75,6 +81,7 @@ void app_blink()
 
 void app()
 {
+ wdt_reset();
  app_blink();
  if (status.new_cmd) {
    exec_cmd();

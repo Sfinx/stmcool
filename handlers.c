@@ -49,6 +49,7 @@ void SysTick_Handler(void)
  HAL_IncTick();
  if (status.panic)
    return;
+ // HAL_SYSTICK_IRQHandler();
  for (uchar i = 0; i < MAX_LEDS; i++) {
    if (status.led_blink[i] && (status.led_blink[i]++ > 50)) {
      status.led_blink[i] = 0;
@@ -60,7 +61,6 @@ void SysTick_Handler(void)
    user_btn_cb(status.user_btn);
  }
  status.milliseconds++;
- // HAL_SYSTICK_IRQHandler();
  if (!(ms_cnt++ % 100))
    _100_ms_tick();   
  if (ms_cnt == 1000) {

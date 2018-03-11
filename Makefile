@@ -80,6 +80,8 @@ SRC += $(DRIVERSRC)/stm32l4xx_hal_tim_ex.c
 SRC += $(DRIVERSRC)/stm32l4xx_hal_pcd.c
 SRC += $(DRIVERSRC)/stm32l4xx_hal_pcd_ex.c
 SRC += $(DRIVERSRC)/stm32l4xx_ll_usb.c
+SRC += $(DRIVERSRC)/stm32l4xx_hal_iwdg.c
+
 SRC += $(USBSRC)/Core/Src/usbd_core.c
 SRC += $(USBSRC)/Core/Src/usbd_ctlreq.c
 SRC += $(USBSRC)/Core/Src/usbd_ioreq.c

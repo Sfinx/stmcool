@@ -31,7 +31,8 @@ typedef enum oops_t {
     ADC_INIT_OOPS,	// 14
     TEMP_SENSOR_OOPS,	// 15
     FAN_OOPS,		// 16
-    USB_OOPS
+    USB_OOPS,		// 17
+    WDT_OOPS		// 18
 } oops_t;
 
 #define BUZZER_FREQ	7
@@ -56,5 +57,7 @@ extern void user_btn_cb(uchar pressed);
 extern void blink(uchar led);
 extern const char *mcu_time(uchar uptime);
 extern uint64_t get_serial(void);
+extern void wdt_reset();
+
 #define CDC_RX_DATA_SIZE	256
 #define CDC_TX_DATA_SIZE	256
