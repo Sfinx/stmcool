@@ -70,3 +70,12 @@ extern void _1_sec_tick();
 extern void _100_ms_tick();
 
 #define BEEP_DELAY	300
+
+#define send_tty_str(x)  { usb_cdc_send_str(x);HAL_Delay(1); }
+#define send_tty_printf(x...)  { usb_cdc_printf(x);HAL_Delay(1); }
+
+#include <string.h>
+#include <stdlib.h>
+
+#define MAX_CMD_SIZE    16
+#define MAX_CMD_HISTORY 3

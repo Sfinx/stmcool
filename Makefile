@@ -58,6 +58,7 @@ LINKER       = $(BOARD)
 
 SRC  = app.c
 SRC += lib.c
+SRC += ring.c
 SRC += usbd_cdc_interface.c
 SRC += usbd_conf.c
 SRC += usbd_desc.c

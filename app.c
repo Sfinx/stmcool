@@ -16,22 +16,25 @@ void user_btn_cb(uchar pressed)
  (void)pressed;
 }
 
-void set_time()
+void set_time(const char *t)
 {
- // set time to 2018-01-01 01:02:03 UTC
- status.time = 1514768523ULL;
+ long long int tm;
+ if ((strlen(t) != 10) || sscanf(t, "%lld", &tm) != 1) {
+   send_tty_printf("\r\nInvalid timestamp");
+   return;
+ }
+ status.time = tm;
  status.seconds = status.milliseconds = 0;
+ send_tty_printf("\r\ndevice time set to %s", mcu_time(0));
 }
-
-#define send_tty_str(x)  { usb_cdc_send_str(x);HAL_Delay(1); }
-#define send_tty_printf(x...)  { usb_cdc_printf(x);HAL_Delay(1); }
 
 void help()
 {
  send_tty_str("\r\n\nSTMCool help:\r\n");
  send_tty_str("\t?/h\t- help\r\n");
- send_tty_str("\tr\t- reset by app hang\r\n");
- send_tty_str("\tR\t- reset by h/w crash\r\n");
+ send_tty_str("\tr\t- iwdt reset by app hang\r\n");
+ send_tty_str("\tR\t- iwdt reset by h/w crash\r\n");
+ send_tty_str("\tt <u>\t- set time from unix timestamp\r\n");
  send_tty_str("\ti\t- info\r\n");
 }
 
@@ -42,6 +45,7 @@ void info()
    send_tty_printf("fan%d:%d rpm\r\n", i, get_fan(i));
  send_tty_printf("mcu_temp: %d C\r\n", get_mcu_temp());
  send_tty_printf("reset type: %s [0x%x]\r\n", get_reset_type_str(), status.reset_type);
+ send_tty_printf("device time is %s\r\n", status.time ? mcu_time(0) : "not set");
  send_tty_printf("uptime: %s", mcu_time(1));
 }
 
@@ -49,6 +53,9 @@ void exec_cmd()
 {
  const char *cmd = status.cmd;
  switch(cmd[0]) {
+   case 't':
+     set_time(cmd + 2);
+     break;
    case 'R':
      *(__IO uint32_t *) 0x00040001 = 0xFF; // trigger infinite h/w fault
      break;
@@ -70,8 +77,6 @@ void exec_cmd()
  send_tty_str("\n\r>");
 }
 
-#include <stdlib.h>
-
 void app_blink()
 {
  static char ledv;
@@ -83,8 +88,13 @@ void app_blink()
  }
 }
 
+static ring_t tty_out;
+
 void app()
 {
+ char c[2] = { 0 };
+ if (ring_read(&tty_out, (uint8_t *)&c, 1))
+   send_tty_str(c);
  wdt_reset();
  app_blink();
  if (status.new_cmd) {
@@ -108,17 +118,11 @@ void main(void)
  beep(BEEP_DELAY);
  HAL_Delay(BEEP_DELAY);
  beep(BEEP_DELAY);
- set_time();
  while (1) {
    if (!status.panic)
      app();
  }
 }
-
-#define MAX_CMD_SIZE	4
-#define MAX_CMD_HISTORY	3
-
-#include <string.h>
 
 void process_input(char *b, uchar len)
 {
@@ -157,7 +161,7 @@ void process_input(char *b, uchar len)
          cmd[curr_history_idx][curr_cmd_idx] = 0;
          beep(20);
        } else
-           usb_cdc_send_char(b[0]);
+           ring_write(&tty_out, (uint8_t *)b, 1);
    }
  } else if (len == 2) {
    if (b[0] == 0x5B) {
