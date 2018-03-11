@@ -3,7 +3,7 @@
 
 #include <lib.h>
 
-#define LED_DELAY  		300
+#define APP_LED_DELAY  		300
 
 // Red LED - PA1
 #define RED_LED_PIN         	GPIO_PIN_1
@@ -61,6 +61,7 @@ typedef struct status_t {
   volatile unsigned cdc_ok:1;
   const char *cmd;
   volatile unsigned new_cmd:1;
+  uchar reset_type;
 } status_t;
 
 extern status_t status;

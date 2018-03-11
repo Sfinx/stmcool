@@ -28,10 +28,10 @@ void set_time()
 
 void help()
 {
- send_tty_str("\r\n\nstmcool help:\r\n");
+ send_tty_str("\r\n\nSTMCool help:\r\n");
  send_tty_str("\t?/h\t- help\r\n");
  send_tty_str("\tr\t- reset by app hang\r\n");
- send_tty_str("\tR\t- reset by app crash\r\n");
+ send_tty_str("\tR\t- reset by h/w crash\r\n");
  send_tty_str("\ti\t- info\r\n");
 }
 
@@ -41,6 +41,7 @@ void info()
  for (uchar i = 0; i < MAX_RPM_SENSORS; i++)
    send_tty_printf("fan%d:%d rpm\r\n", i, get_fan(i));
  send_tty_printf("mcu_temp: %d C\r\n", get_mcu_temp());
+ send_tty_printf("reset type: %s [0x%x]\r\n", get_reset_type_str(), status.reset_type);
  send_tty_printf("uptime: %s", mcu_time(1));
 }
 
@@ -49,7 +50,7 @@ void exec_cmd()
  const char *cmd = status.cmd;
  switch(cmd[0]) {
    case 'R':
-     *(__IO uint32_t *) 0x00040001 = 0xFF;
+     *(__IO uint32_t *) 0x00040001 = 0xFF; // trigger infinite h/w fault
      break;
    case 'r':
      while(1);
@@ -69,11 +70,14 @@ void exec_cmd()
  send_tty_str("\n\r>");
 }
 
+#include <stdlib.h>
+
 void app_blink()
 {
- static char ledv, oldt;
- if (oldt != (status.seconds & 0xFF)) {
-   oldt = (status.seconds & 0xFF);
+ static char ledv;
+ static ushort oldt;
+ if (abs(oldt - status.milliseconds) > APP_LED_DELAY) {
+   oldt = status.milliseconds;
    set_led(GREEN_LED, ledv);
    ledv = ledv ? 0 : 1;
  }
@@ -93,7 +97,8 @@ void usb_cdc_ready()
 {
  uint32_t s0 = (get_serial() >> 32);
  uint32_t s1 = (get_serial() & 0xFFFFFFFF);
- usb_cdc_printf("\r\n%s STMcool [ s/n %08X%08X ] booted ok\r\n>", mcu_time(0), s0, s1);
+ usb_cdc_printf("\r\n%s STMcool [ s/n %08X%08X ]%s\r\n>", mcu_time(0), s0, s1,
+   status.cdc_ok ? "" : " booted ok");
  status.cdc_ok = 1;
 }
 

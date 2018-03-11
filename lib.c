@@ -276,27 +276,45 @@ void wdt_reset()
  HAL_IWDG_Refresh(&IwdgHandle);
 }
 
+#define	WDT_TIMEOUT	2
+
 void wdt_init()
 {
- if (__HAL_RCC_GET_FLAG(RCC_FLAG_IWDGRST) != RESET)
-   debug("WDT reset occured\r\n");
  __HAL_RCC_CLEAR_RESET_FLAGS();
- /* Set counter reload value to obtain 1 sec. IWDG TimeOut.
-     IWDG counter clock Frequency = uwLsiFreq
+ /* Set counter reload value to obtain 1 sec IWDG TimeOut
+     IWDG counter clock Frequency = LSI_Freq
      Set Prescaler to 32 (IWDG_PRESCALER_32)
-     Timeout Period = (Reload Counter Value * 32) / uwLsiFreq
-     So Set Reload Counter Value = (1 * uwLsiFreq) / 32 */
+     Timeout Period = (Reload Counter Value * 32) / LSI_Freq
+     So Set Reload Counter Value = (1 * LSI_Freq) / 32 */
  IwdgHandle.Instance = IWDG;
  IwdgHandle.Init.Prescaler = IWDG_PRESCALER_32;
- IwdgHandle.Init.Reload = (32000 / 32) * 3; // LSI freq is 32kHz, *3 means 3 seconds
+ IwdgHandle.Init.Reload = (32000 / 32) * WDT_TIMEOUT; // LSI freq is 32kHz = ~1000ms = 1 second
  IwdgHandle.Init.Window = IWDG_WINDOW_DISABLE;
  if (HAL_IWDG_Init(&IwdgHandle) != HAL_OK)
   panic(WDT_OOPS);
 }
 
+const char *get_reset_type_str()
+{
+ switch (status.reset_type) {
+   case 0x4:
+     return "button";
+   case 0x14:
+     return "software";
+   case 0x24:
+     return "iwdt";
+   case 0xC:
+     return "power";
+   default:
+     break;
+ }
+ return "unknown";
+}
+
 void board_init()
 {
  memset(&status, 0, sizeof(status));
+ status.reset_type = (RCC->CSR >> 24);
  HAL_Init();
  SystemClock_Config();
  user_btn_init();
@@ -331,15 +349,13 @@ void hard_delay(uint32_t d)
 
 void panic(int i)
 {
+ if (status.panic)
+   return;
  status.panic = 1;
  leds_off();
  debug("%sOops [%d] !\r\n%s", RTT_CTRL_BG_BRIGHT_RED, i, RTT_CTRL_RESET);
  while(1) {
-   static char count, wc;
-   if (wc < 10) {
-     wc++;
-     wdt_reset();
-   }
+   static char count;
    set_led(RED_LED, 1);
    hard_delay(0xFFFFFF);
    set_led(RED_LED, 0);
