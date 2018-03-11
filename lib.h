@@ -35,6 +35,7 @@ typedef enum oops_t {
 } oops_t;
 
 #define BUZZER_FREQ	7
+#define PANIC_FREQ	47
 
 extern void board_init();
 extern void set_led(uchar led, uchar on);

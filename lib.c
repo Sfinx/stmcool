@@ -33,7 +33,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
  (void)htim;
  if (!status.buzzer_timer--)
    buzzer(0);
- if (status.buzzer_on && (buzzer_cnt++ > BUZZER_FREQ)) {
+ if (status.buzzer_on && (buzzer_cnt++ > (status.panic ? PANIC_FREQ : BUZZER_FREQ))) {
    buzzer_cnt = 0;
    // toggle buzzer
    HAL_GPIO_TogglePin(BUZZER_GPIO_BUS, BUZZER_PIN);
