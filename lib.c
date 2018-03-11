@@ -30,6 +30,7 @@ static u32 buzzer_cnt;
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+ (void)htim;
  if (!status.buzzer_timer--)
    buzzer(0);
  if (status.buzzer_on && (buzzer_cnt++ > BUZZER_FREQ)) {
@@ -183,7 +184,6 @@ void user_btn_init()
 
 void fan_sensors_init()
 {
- uchar i;
  GPIO_InitTypeDef gpio = { 0 };
  FAN_GPIO_CLK_ENABLE();
  gpio.Pin = (FAN0_GPIO | FAN1_GPIO | FAN2_GPIO | FAN3_GPIO | FAN4_GPIO | FAN5_GPIO |
@@ -193,7 +193,7 @@ void fan_sensors_init()
  gpio.Speed = GPIO_SPEED_FREQ_HIGH;
  HAL_GPIO_Init(FAN_GPIO_BUS, &gpio);
  // fans are connected to EXTI_Line[0..7], which has EXTI[0..7]_IRQn vector
- for (i = 0; i < 5; i++) {
+ for (uchar i = 0; i < 5; i++) {
    HAL_NVIC_SetPriority(EXTI0_IRQn + i, 2, 0);
    HAL_NVIC_EnableIRQ(EXTI0_IRQn + i);
  }

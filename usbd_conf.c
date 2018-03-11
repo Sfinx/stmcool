@@ -10,6 +10,7 @@ PCD_HandleTypeDef hpcd;
   */
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
 {
+ (void)hpcd;
   /* Enable USB FS Clock */
   __HAL_RCC_USB_CLK_ENABLE();
   
@@ -27,6 +28,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd)
   */
 void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd)
 {
+ (void)hpcd;
   /* Disable USB FS Clock */
   __HAL_RCC_USB_CLK_DISABLE();
 }
@@ -384,6 +386,7 @@ void USBD_LL_Delay(uint32_t Delay)
   */
 void *USBD_static_malloc(uint32_t size)
 {
+  (void)size;
   static uint32_t mem[MAX_STATIC_ALLOC_SIZE];
   return mem;
 }
@@ -395,4 +398,5 @@ void *USBD_static_malloc(uint32_t size)
   */
 void USBD_static_free(void *p)
 {
+ (void)p;
 }

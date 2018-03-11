@@ -82,6 +82,7 @@ static void Get_SerialNum(void);
   */
 uint8_t *USBD_VCP_DeviceDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
 {
+  (void)speed;
   *length = sizeof(USBD_DeviceDesc);
   return (uint8_t*)USBD_DeviceDesc;
 }
@@ -94,6 +95,7 @@ uint8_t *USBD_VCP_DeviceDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
   */
 uint8_t *USBD_VCP_LangIDStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
 {
+  (void)speed;
   *length = sizeof(USBD_LangIDDesc);  
   return (uint8_t*)USBD_LangIDDesc;
 }
@@ -106,6 +108,7 @@ uint8_t *USBD_VCP_LangIDStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
   */
 uint8_t *USBD_VCP_ProductStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
 {
+  (void)speed;
   USBD_GetString((uint8_t *)USBD_PRODUCT_FS_STRING, USBD_StrDesc, length);    
   return USBD_StrDesc;
 }
@@ -118,6 +121,7 @@ uint8_t *USBD_VCP_ProductStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length
   */
 uint8_t *USBD_VCP_ManufacturerStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
 {
+  (void)speed;
   USBD_GetString((uint8_t *)USBD_MANUFACTURER_STRING, USBD_StrDesc, length);
   return USBD_StrDesc;
 }
@@ -130,6 +134,7 @@ uint8_t *USBD_VCP_ManufacturerStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *l
   */
 uint8_t *USBD_VCP_SerialStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
 {
+  (void)speed;
   *length = USB_SIZ_STRING_SERIAL;
   
   /* Update the serial number string descriptor with the data from the unique ID*/
@@ -146,6 +151,7 @@ uint8_t *USBD_VCP_SerialStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
   */
 uint8_t *USBD_VCP_ConfigStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
 {
+  (void)speed;
   USBD_GetString((uint8_t *)USBD_CONFIGURATION_FS_STRING, USBD_StrDesc, length); 
   return USBD_StrDesc;  
 }
@@ -158,6 +164,7 @@ uint8_t *USBD_VCP_ConfigStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
   */
 uint8_t *USBD_VCP_InterfaceStrDescriptor(USBD_SpeedTypeDef speed, uint16_t *length)
 {
+  (void)speed;
   USBD_GetString((uint8_t *)USBD_INTERFACE_FS_STRING, USBD_StrDesc, length);
   return USBD_StrDesc;  
 }
@@ -184,9 +191,7 @@ static void Get_SerialNum(void)
   */
 static void IntToUnicode (uint32_t value , uint8_t *pbuf , uint8_t len)
 {
-  uint8_t idx = 0;
-  
-  for( idx = 0 ; idx < len ; idx ++)
+  for( uint8_t idx = 0 ; idx < len ; idx ++)
   {
     if( ((value >> 28)) < 0xA )
     {

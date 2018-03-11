@@ -164,7 +164,7 @@ SECTIONS
 
     . = ALIGN(8);
     _esram2 = .;       /* create a global symbol at sram2 end */
-  } >SRAM2 AT> FLASH
+  } >RAM2 AT> FLASH
   
   /* Uninitialized data section */
   . = ALIGN(4);

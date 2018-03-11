@@ -12,8 +12,7 @@ u32 get_fan(u8 fan)
 
 void print_info()
 {
- uint i = 0;
- for (; i < MAX_RPM_SENSORS; i++) {
+ for (uchar i = 0; i < MAX_RPM_SENSORS; i++) {
    u32 fan = get_fan(i);
    if (fan)
      usb_cdc_printf("%s fan%d:%d rpm\r\n", mcu_time(), i, fan);

@@ -45,6 +45,7 @@ static char cdc_ready = 0;
 
 static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 { 
+ (void)length;
  // debug("CDC_Itf_Control: %d\n", cmd);
  switch (cmd) {
    case CDC_SEND_ENCAPSULATED_COMMAND:
@@ -128,6 +129,7 @@ uint8_t usb_cdc_printf(const char *fmt, ...)
 
 static int8_t CDC_Itf_Receive(uint8_t* buf, uint32_t *len)
 {
+ (void)buf;
  blink(BLUE_LED);
  if (*len > CDC_RX_DATA_SIZE) {
    debug("cdc_rx: too big packet:%d/%d\n", *len, CDC_RX_DATA_SIZE);

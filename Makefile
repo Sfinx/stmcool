@@ -23,7 +23,7 @@ DDEFS = -DSTM32L433xx -DUSE_HAL_DRIVER
 DADEFS = 
 
 # List all default directories to look for include files here
-DINCDIR = usb-device-lib/Core/Inc usb-device-lib/Class/CDC/Inc
+DINCDIR = . usb-device-lib/Core/Inc usb-device-lib/Class/CDC/Inc
 
 # List the default directory to look for the libraries here
 DLIBDIR =
@@ -142,12 +142,15 @@ endif
 ADEFS   = $(DADEFS) $(UADEFS)
 OBJS    = $(ASRC:.s=.o) $(SRC:.c=.o)
 LIBS    = $(DLIBS) $(ULIBS)
-MCFLAGS = -mcpu=$(MCU) -mthumb -flto -ffreestanding
-#MCFLAGS += -msoft-float
+MCFLAGS = -mcpu=$(MCU) -mthumb -ffreestanding
+# Dangerous while developing !!!
+# MCFLAGS += -flto
 
 ASFLAGS = $(MCFLAGS) -D__thumb2__ -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)
 #-ffreestanding
-CPFLAGS = $(MCFLAGS) $(OPT) -Werror -fomit-frame-pointer -ffunction-sections -fdata-sections -Wall -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
+CPFLAGS = $(MCFLAGS) -Wall -Wextra -Wunused-variable -Wunused-but-set-variable -Wmaybe-uninitialized \
+	-Wuninitialized -std=gnu11 $(OPT) -Werror -fomit-frame-pointer -ffunction-sections \
+	-fdata-sections -fverbose-asm -Wa,-ahlms=$(<:.c=.lst) $(DEFS)
 LDFLAGS = $(MCFLAGS) -fwhole-program -T$(LDSCRIPT) -Wl,--gc-sections,-Map=$(PROJECT).map,--cref,--no-warn-mismatch $(LIBDIR)
 
 # Generate dependency information
@@ -166,7 +169,7 @@ tty: tty.cpp
 	$(CXX) -O2 -Wall tty.cpp -o tty -lcommoncpp -lucommon
 
 %.o : %.c
-	$(CC) -c $(CPFLAGS) -I . $(INCDIR) $< -o $@
+	$(CC) -c $(CPFLAGS) $(INCDIR) $< -o $@
 
 %.o : %.s
 	$(AS) -c $(ASFLAGS) $< -o $@

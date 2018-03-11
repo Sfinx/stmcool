@@ -46,11 +46,10 @@ static ushort ms_cnt = 100;
 // happens each 1ms
 void SysTick_Handler(void)
 {
- uchar i;
  HAL_IncTick();
  if (status.panic)
    return;
- for (i = 0; i < MAX_LEDS; i++) {
+ for (uchar i = 0; i < MAX_LEDS; i++) {
    if (status.led_blink[i] && (status.led_blink[i]++ > 50)) {
      status.led_blink[i] = 0;
      set_led(i, 0);
@@ -93,8 +92,7 @@ fan_interrupt(EXTI4, 4)
 
 void EXTI9_5_IRQHandler(void)
 {
- uchar i;
- for (i = 5; i <= 9; i++) {
+ for (uchar i = 5; i <= 9; i++) {
    if (__HAL_GPIO_EXTI_GET_IT((GPIO_PIN_0 << i)) != RESET) {
      HAL_GPIO_EXTI_IRQHandler((GPIO_PIN_0 << i));
      break;
@@ -105,8 +103,7 @@ void EXTI9_5_IRQHandler(void)
 
 void EXTI15_10_IRQHandler(void)
 {
- uchar i;
- for (i = 10; i <= 15; i++) {
+ for (uchar i = 10; i <= 15; i++) {
    if (__HAL_GPIO_EXTI_GET_IT((GPIO_PIN_0 << i)) != RESET) {
      HAL_GPIO_EXTI_IRQHandler((GPIO_PIN_0 << i));
      break;
