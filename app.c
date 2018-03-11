@@ -10,19 +10,10 @@ u32 get_fan(u8 fan)
  return f;
 }
 
-void print_info()
-{
- for (uchar i = 0; i < MAX_RPM_SENSORS; i++) {
-   u32 fan = get_fan(i);
-   if (fan)
-     usb_cdc_printf("%s fan%d:%d rpm\r\n", mcu_time(), i, fan);
- }
- usb_cdc_printf("%s mcu_temp: %d C\r\n", mcu_time(), get_mcu_temp());
-}
-
 void user_btn_cb(uchar pressed)
 {
- usb_cdc_printf("%s user_btn %s\n\r", mcu_time(), pressed ? "pressed" : "released");
+ // usb_cdc_printf("%s user_btn %s\n\r", mcu_time(), pressed ? "pressed" : "released");
+ (void)pressed;
 }
 
 void set_time()
@@ -32,20 +23,70 @@ void set_time()
  status.seconds = status.milliseconds = 0;
 }
 
+#define send_tty_str(x)  { usb_cdc_send_str(x);HAL_Delay(1); }
+#define send_tty_printf(x...)  { usb_cdc_printf(x);HAL_Delay(1); }
+
+void help()
+{
+ send_tty_str("\r\n\nstmcool help:\r\n");
+ send_tty_str("\t?/h\t- help\r\n");
+ send_tty_str("\ti\t- info\r\n");
+}
+
+void info()
+{
+ send_tty_str("\r\n");
+ for (uchar i = 0; i < MAX_RPM_SENSORS; i++)
+   send_tty_printf("fan%d:%d rpm\r\n", i, get_fan(i));
+ send_tty_printf("mcu_temp: %d C\r\n", get_mcu_temp());
+ send_tty_printf("uptime: %s", mcu_time(1));
+}
+
+void exec_cmd()
+{
+ const char *cmd = status.cmd;
+ debug("new cmd [%s]\n", cmd);
+ switch(cmd[0]) {
+   case 'h':
+   case '?':
+     help();
+     break;
+   case 'i':
+     info();
+     break;
+   default:
+     send_tty_str("\n\rUnknown cmd: [");
+     send_tty_str(cmd);
+     send_tty_str("], try h");
+     break;
+ }
+ send_tty_str("\n\r>");
+}
+
+void app_blink()
+{
+ static char ledv, oldt;
+ if (oldt != (status.seconds & 0xFF)) {
+   oldt = (status.seconds & 0xFF);
+   set_led(GREEN_LED, ledv);
+   ledv = ledv ? 0 : 1;
+ }
+}
+
 void app()
 {
- set_led(GREEN_LED, 1);
- HAL_Delay(LED_DELAY);
- set_led(GREEN_LED, 0);
- print_info();
- HAL_Delay(LED_DELAY);
+ app_blink();
+ if (status.new_cmd) {
+   exec_cmd();
+   status.new_cmd = 0;
+ }
 }
 
 void usb_cdc_ready()
 {
  uint32_t s0 = (get_serial() >> 32);
  uint32_t s1 = (get_serial() & 0xFFFFFFFF);
- usb_cdc_printf("\r\n%s STMcool [ s/n %08X%08X ] booted ok\r\n", mcu_time(), s0, s1);
+ usb_cdc_printf("\r\n%s STMcool [ s/n %08X%08X ] booted ok\r\n>", mcu_time(0), s0, s1);
  status.cdc_ok = 1;
 }
 
@@ -62,13 +103,75 @@ void main(void)
  }
 }
 
+#define MAX_CMD_SIZE	4
+#define MAX_CMD_HISTORY	3
+
 #include <string.h>
+
+void process_input(char *b, uchar len)
+{
+ static char cmd[MAX_CMD_HISTORY][MAX_CMD_SIZE + 1];
+ static uchar curr_history_idx, curr_cmd_idx;;
+ if (len == 1) {
+   switch (b[0]) {
+     case 0xC: // clear screen
+       usb_cdc_send_char(b[0]);
+       break;
+     case 0x1B:
+       break;
+     case 0xd:
+       if (curr_cmd_idx) {
+         status.cmd = (const char *)&(cmd[curr_history_idx++]);
+         status.new_cmd = 1;
+         if (curr_history_idx >= MAX_CMD_HISTORY)
+           curr_history_idx = 0;
+       } else // print prompt
+           usb_cdc_send_str("\n\r>");
+       memset(cmd[curr_history_idx], 0, MAX_CMD_SIZE);
+       curr_cmd_idx = 0;
+       break;
+     case 0x8:
+       if (curr_cmd_idx) {
+         curr_cmd_idx--;
+         cmd[curr_history_idx][curr_cmd_idx] = 0;
+         char q[] = { b[0], ' ', b[0], 0 };
+         usb_cdc_send_str(q);
+       }
+       break;
+     default:
+       cmd[curr_history_idx][curr_cmd_idx++] = b[0];
+       if (curr_cmd_idx > MAX_CMD_SIZE) {
+         curr_cmd_idx--;
+         cmd[curr_history_idx][curr_cmd_idx] = 0;
+         beep(20);
+       } else
+           usb_cdc_send_char(b[0]);
+   }
+ } else if (len == 2) {
+   if (b[0] == 0x5B) {
+     switch(b[1]) {
+       case 0x41: // up
+         usb_cdc_send_str("todo: up\n\r>");
+         break;
+       case 0x42: // down
+         usb_cdc_send_str("todo: down\n\r>");
+         break;
+       case 0x43: // right
+         usb_cdc_send_str("todo: right\n\r>");
+         break;
+       case 0x44: // left
+         usb_cdc_send_str("todo: left\n\r>");
+         break;
+     }
+   }
+ }
+}
 
 void usb_cdc_rx_cb(uint8_t* b, uint32_t len)
 {
  // ugly: add 0 byte
  b[len] = 0;
- debug("usb_cdc_rx_cb: %d [%s]\n", len, b);
+ process_input((char*)b, len);
 }
 
 // called from systick interrupt

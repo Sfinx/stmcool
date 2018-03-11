@@ -59,6 +59,8 @@ typedef struct status_t {
   volatile time_t time;
   short mcu_temp;
   volatile unsigned cdc_ok:1;
+  const char *cmd;
+  volatile unsigned new_cmd:1;
 } status_t;
 
 extern status_t status;

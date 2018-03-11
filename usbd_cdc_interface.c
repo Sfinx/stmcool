@@ -94,21 +94,28 @@ static int8_t CDC_Itf_Control (uint8_t cmd, uint8_t* pbuf, uint16_t length)
 uint8_t usb_cdc_send(const uint8_t* buf, uint16_t len)
 {
  if (cdc_ready < 2)
-   return USBD_BUSY;
+   goto busy;
  if (len > CDC_TX_DATA_SIZE) {
    debug("cdc_tx: too big packet:%d/%d\n", len, CDC_TX_DATA_SIZE);
-   return USBD_BUSY;
+   goto busy;
  }
  USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*) USBD_Device.pClassData;
- if (hcdc->TxState != 0) {
-   blink(RED_LED);
-   return USBD_BUSY;
- }
+ if (hcdc->TxState != 0)
+   goto busy;
  blink(BLUE_LED);
  static char tx_b[CDC_TX_DATA_SIZE];
  memcpy(tx_b, buf, len);
  USBD_CDC_SetTxBuffer(&USBD_Device, (uint8_t *)tx_b, len);
  return USBD_CDC_TransmitPacket(&USBD_Device);
+busy:
+ blink(RED_LED);
+ return USBD_BUSY;
+}
+
+uint8_t usb_cdc_send_char(const char c)
+{
+ const uint8_t t = c;
+ return usb_cdc_send(&t, 1);
 }
 
 uint8_t usb_cdc_send_str(const char *s)
