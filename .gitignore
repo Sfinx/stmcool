@@ -7,3 +7,4 @@
 JLink.log
 tty
 node_modules
+package-lock.json

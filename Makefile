@@ -163,7 +163,10 @@ CPFLAGS += -MD -MP -MF .dep/$(@F).d
 # makefile rules
 #
 
-all:	tty stmcool
+all:	tty timestamp stmcool
+
+timestamp:
+	@npm -i
 
 stmcool: $(OBJS) $(PROJECT).elf $(PROJECT).bin
 	@$(TRGT)size $(PROJECT).elf
