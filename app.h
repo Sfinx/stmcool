@@ -49,6 +49,7 @@ typedef struct status_t {
   volatile u32 _1ms_tick;
   volatile unsigned long long seconds;
   volatile unsigned milliseconds:10;
+  volatile time_t time;
   volatile u32 buzzer_timer;
   volatile unsigned panic:1;
   volatile unsigned buzzer_on:1;
@@ -56,7 +57,6 @@ typedef struct status_t {
   volatile ushort fan[MAX_RPM_SENSORS];
   volatile ushort temp[MAX_TEMP_SENSORS];
   volatile uchar led_blink[MAX_LEDS];
-  volatile time_t time;
   short mcu_temp;
   volatile unsigned cdc_ok:1;
   const char *cmd;

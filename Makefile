@@ -166,7 +166,7 @@ CPFLAGS += -MD -MP -MF .dep/$(@F).d
 all:	tty timestamp stmcool
 
 timestamp:
-	@npm -i
+	@npm i
 
 stmcool: $(OBJS) $(PROJECT).elf $(PROJECT).bin
 	@$(TRGT)size $(PROJECT).elf

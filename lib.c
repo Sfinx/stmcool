@@ -442,11 +442,11 @@ struct tm *gmtime(time_t epoch)
  return tp;
 }
 
-const char *mcu_time(uchar uptime)
+const char *mcu_time(uchar force_uptime)
 {
  static char b[32];
- if (!uptime && status.time) {
-   struct tm *t = gmtime(status.seconds + status.time);
+ if (!force_uptime && status.time) {
+   struct tm *t = gmtime(status.time);
    sprintf(b, "[%04d-%02d-%02d %02d:%02d:%02d.%03d]", t->tm_year, t->tm_mon, t->tm_mday, t->tm_hour,
      t->tm_min, t->tm_sec, status.milliseconds);
  } else {

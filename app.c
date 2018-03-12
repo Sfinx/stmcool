@@ -23,7 +23,6 @@ void set_time(const char *t)
    return;
  }
  status.time = tm;
- status.seconds = status.milliseconds = 0;
  send_tty_printf("\r\ndevice time set to %s", mcu_time(0));
 }
 
@@ -34,7 +33,7 @@ void help()
  send_tty_str("\tr\t- iwdt reset by app hang\r\n");
  send_tty_str("\tR\t- iwdt reset by h/w crash\r\n");
  send_tty_str("\tt <u>\t- set time from unix timestamp\r\n");
- send_tty_str("\ti\t- info\r\n");
+ send_tty_str("\tw\t- info\r\n");
 }
 
 void info()
@@ -64,7 +63,7 @@ void exec_cmd()
    case '?':
      help();
      break;
-   case 'i':
+   case 'w':
      info();
      break;
    default:

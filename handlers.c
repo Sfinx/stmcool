@@ -67,6 +67,8 @@ void SysTick_Handler(void)
    ms_cnt = 0;
    _1_sec_tick();
    status.seconds++;
+   if (status.time)
+     status.time++;
    status.milliseconds = 0;
  }
 }
