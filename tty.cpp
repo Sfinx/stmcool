@@ -43,13 +43,17 @@ string read_stdin()
    cerr << "read_stdin: got interrupt\n";
  else {
    if (FD_ISSET(STDIN_FILENO, &read_fds)) {
-     char b[2] = { 0 };
+     char b[3] = { 0 };
      int res = read(0, &b, 1);
      if (!b[0]) // ctrl-d
        sigquit_handler(SIGQUIT);
      if (b[0] == 0xa)
        b[0] = 0xd;
-     if (res == 1)
+     if (b[0] == 0x7f)
+       b[0] = 0x8;
+     if (b[0] == 0x5b) // cursor esc seq
+       res = read(0, &(b[1]), 1);
+     if (res >= 1)
        return string(b);
    } // timeout
  }
@@ -94,10 +98,9 @@ void app()
    if (o.size())
      cerr << o;
    if (i.size())
-     stmcool->aWrite((char *)i.c_str(), 1);
+     stmcool->aWrite((char *)i.c_str(), i.size());
  }
 }
-
 
 void set_signals()
 {
