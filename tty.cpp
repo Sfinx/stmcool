@@ -83,7 +83,7 @@ void app()
  if (stmcool)
    delete stmcool;
  stmcool = 0;
- stmcool = new Serial("/dev/ttyACM0");
+ stmcool = new Serial("/dev/stmcool");
  stmcool->setSpeed(115200);
  stmcool->setCharBits(8);
  stmcool->setParity(Serial::parityNone);
