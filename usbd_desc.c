@@ -7,7 +7,7 @@
 #define USBD_PID                      0xc001
 #define USBD_LANGID_STRING            0x409
 #define USBD_MANUFACTURER_STRING      "STMCool"
-#define USBD_PRODUCT_FS_STRING        "STMCool CU1 Unit"
+#define USBD_PRODUCT_FS_STRING        "CU1 Unit"
 #define USBD_CONFIGURATION_FS_STRING  "VCP Config"
 #define USBD_INTERFACE_FS_STRING      "VCP Interface"
 

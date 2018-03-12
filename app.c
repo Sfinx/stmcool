@@ -122,6 +122,8 @@ void process_input(char *b, uchar len)
        break;
      case 0x1B:
        break;
+     case 0x1:
+       curr_cmd_idx = 0;
      case 0xd:
        if (curr_cmd_idx) {
          status.cmd = (const char *)&(cmd[curr_history_idx++]);

@@ -93,6 +93,12 @@ void app()
  stmcool->setParity(Serial::parityNone);
  stmcool->setStopBits(1);
  stmcool->setFlowControl(Serial::flowNone);
+ static bool show_prompt = true;
+ if (show_prompt) {
+   char b = 1;
+   stmcool->aWrite(&b, 1);
+   show_prompt = false;
+ }
  while(1) {
    string i, o = process_input(i);
    if (o.size()) {
