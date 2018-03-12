@@ -12,8 +12,7 @@ u32 get_fan(u8 fan)
 
 void user_btn_cb(uchar pressed)
 {
- // usb_cdc_printf("%s user_btn %s\n\r", mcu_time(), pressed ? "pressed" : "released");
- (void)pressed;
+ usb_cdc_printf("\r%s user_btn %s\n\r", mcu_time(0), pressed ? "pressed" : "released");
 }
 
 void set_time(const char *t)
@@ -77,16 +76,6 @@ void exec_cmd()
  send_tty_str("\n\r>");
 }
 
-void app_blink()
-{
- static char ledv;
- static ushort oldt;
- if (abs(oldt - status.milliseconds) > APP_LED_DELAY) {
-   oldt = status.milliseconds;
-   set_led(GREEN_LED, ledv);
-   ledv = ledv ? 0 : 1;
- }
-}
 
 static ring_t tty_out;
 
@@ -96,7 +85,6 @@ void app()
  if (ring_read(&tty_out, (uint8_t *)&c, 1))
    send_tty_str(c);
  wdt_reset();
- app_blink();
  if (status.new_cmd) {
    exec_cmd();
    status.new_cmd = 0;
@@ -198,6 +186,13 @@ void _1_sec_tick()
 // called from systick interrupt
 void _100_ms_tick()
 {
+ static char ledv;
+ static short t;
+ if (t++ >= APP_LED_DELAY/100) {
+   t = 0;
+   set_led(GREEN_LED, ledv);
+   ledv = ledv ? 0 : 1;
+ }
 }
 
 status_t status;

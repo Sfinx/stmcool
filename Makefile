@@ -146,7 +146,7 @@ ADEFS   = $(DADEFS) $(UADEFS)
 OBJS    = $(ASRC:.s=.o) $(SRC:.c=.o)
 LIBS    = $(DLIBS) $(ULIBS)
 MCFLAGS = -mcpu=$(MCU) -mthumb -ffreestanding
-# Dangerous while developing !!!
+# Dangerous while developing !!! set only for production release
 # MCFLAGS += -flto
 
 ASFLAGS = $(MCFLAGS) -D__thumb2__ -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst) $(ADEFS)

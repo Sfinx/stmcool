@@ -153,6 +153,13 @@ void set_led(uchar led, uchar on)
    HAL_GPIO_WritePin(bus, pin, GPIO_PIN_SET);
 }
 
+void leds_off()
+{
+ set_led(RED_LED, 0);
+ set_led(GREEN_LED, 0);
+ set_led(BLUE_LED, 0);
+}
+
 void leds_init()
 {
  GPIO_InitTypeDef gpio = { 0 };
@@ -165,9 +172,7 @@ void leds_init()
  __GPIOA_CLK_ENABLE();
  gpio.Pin   = RED_LED_PIN;
  HAL_GPIO_Init(GPIOA, &gpio);
- set_led(RED_LED, 0);
- set_led(GREEN_LED, 0);
- set_led(BLUE_LED, 0);
+ leds_off();
 }
 
 // PC13
@@ -325,13 +330,6 @@ void board_init()
  fan_sensors_init();
  wdt_init();
  debug("%sstmcool powered on\r\n%s", RTT_CTRL_TEXT_GREEN, RTT_CTRL_RESET);
-}
-
-void leds_off()
-{
- set_led(RED_LED, 0);
- set_led(GREEN_LED, 0);
- set_led(BLUE_LED, 0);
 }
 
 #define CYCLES_PER_LOOP		3

@@ -3,7 +3,7 @@
 
 #include <lib.h>
 
-#define APP_LED_DELAY  		300
+#define APP_LED_DELAY  		200
 
 // Red LED - PA1
 #define RED_LED_PIN         	GPIO_PIN_1

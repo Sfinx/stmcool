@@ -6,3 +6,4 @@
 .dep
 JLink.log
 tty
+node_modules
