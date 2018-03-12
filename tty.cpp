@@ -95,8 +95,13 @@ void app()
  stmcool->setFlowControl(Serial::flowNone);
  while(1) {
    string i, o = process_input(i);
-   if (o.size())
-     cerr << o;
+   if (o.size()) {
+     if (o.c_str()[0] != 0xc)
+       cerr << o;
+     else {
+       // TODO: add clear screen [0xc] support
+     }
+   }
    if (i.size())
      stmcool->aWrite((char *)i.c_str(), i.size());
  }
