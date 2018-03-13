@@ -130,5 +130,3 @@ void USB_IRQHandler(void)
 {
  HAL_PCD_IRQHandler(&hpcd);
 }
-
-//void PPP_IRQHandler(void)

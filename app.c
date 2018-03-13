@@ -75,7 +75,6 @@ void exec_cmd()
  send_tty_str("\n\r>");
 }
 
-
 static ring_t tty_out;
 
 void app()

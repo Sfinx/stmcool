@@ -21,7 +21,7 @@ void sigquit_handler(int sig)
  if ((sig != SIGINT) && (sig != SIGTERM) && (sig != SIGQUIT))
    return;
  set_echo(1);
- cout << "\rbye..\n";
+ cout << "\n\n\rBye..\n\n";
  ::exit(0);
 }
 
@@ -37,10 +37,10 @@ string read_stdin()
  tv.tv_usec = 10000; // 10ms
  int result = select(1, &read_fds, NULL, NULL, &tv);
  if ((result == -1) && (errno != EINTR))
-   cerr << "read_stdin: select: " << strerror(errno) << endl;
+   cerr << "\n\rread_stdin: select: " << strerror(errno) << endl;
  else if ((result == -1) && (errno == EINTR))
    // we've received and interrupt - handle this
-   cerr << "read_stdin: got interrupt\n";
+   cerr << "\n\rread_stdin: got interrupt\n";
  else {
    if (FD_ISSET(STDIN_FILENO, &read_fds)) {
      char b[3] = { 0 };
@@ -130,10 +130,8 @@ int main()
      app();
    } catch (Serial *e) {
       uint err = e->getErrorNumber();
-      cout << "stmcool serial port error: " << err << endl;
-      if (err != 2)
-        stmcool->flushInput();
-      else
+      cerr << "\n\rstmcool serial port error: " << err << endl;
+      if (err)
         sleep(1);
    } 
  }

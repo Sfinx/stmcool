@@ -1,6 +1,3 @@
-ACTION!="add|change", GOTO="stmcool_rules_end
-SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="c001", ENV{ID_MM_DEVICE_IGNORE}="1"
-SUBSYSTEM=="tty", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="c001", GOTO="99-local-stmcool"
-GOTO="stmcool_rules_end"
-LABEL="99-local-stmcool"
-GROUP="dialout", MODE="0660", SYMLINK+="stmcool"
+ACTION!="add|change",SUBSYSTEM!="tty" GOTO="stmcool_rules_end"
+ATTRS{idVendor}=="0483", ATTRS{idProduct}=="c001", GROUP="dialout", MODE="0660", SYMLINK+="stmcool"
+LABEL="stmcool_rules_end"
